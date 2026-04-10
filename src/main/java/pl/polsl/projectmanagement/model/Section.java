@@ -1,4 +1,22 @@
 package pl.polsl.projectmanagement.model;
 
+import jakarta.persistence.*;
+import lombok.Data;
+import java.util.UUID;
+
+@Entity
+@Data
+@Table(name = "sections")
 public class Section {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID seID;
+
+    @Column
+    private String seResult;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SectionStatus seState;
 }
