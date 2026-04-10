@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: dra3-postgres
+    environment:
+      POSTGRES_DB: projectmanagement
+      POSTGRES_USER: dra3user
+      POSTGRES_PASSWORD: dra3pass
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: .
+    container_name: dra3-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/projectmanagement
+      SPRING_DATASOURCE_USERNAME: dra3user
+      SPRING_DATASOURCE_PASSWORD: dra3pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+  #  frontend:
+  #    build: ../frontend
+  #    container_name: dra3-frontend
+  #    ports:
+  #      - "3000:3000"
+  #    depends_on:
+  #      - backend
