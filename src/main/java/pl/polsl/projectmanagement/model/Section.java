@@ -19,4 +19,12 @@ public class Section {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SectionStatus seState;
+
+    @ManyToOne
+    @JoinColumn(name = "topic_id", nullable = false)
+    private Topic topic;
+
+    @ManyToOne
+    @JoinColumn(name = "teacher_id", nullable = false)
+    private Teacher teacher;
 }

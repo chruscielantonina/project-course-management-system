@@ -19,4 +19,12 @@ public class Attendance {
 
     @Column(nullable = false)
     private String aStatus;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
+
+    @ManyToOne
+    @JoinColumn(name = "section_id", nullable = false)
+    private Section section;
 }
