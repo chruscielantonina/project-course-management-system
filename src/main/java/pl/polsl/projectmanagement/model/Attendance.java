@@ -17,8 +17,9 @@ public class Attendance {
     @Column(nullable = false)
     private LocalDate aDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String aStatus;
+    private AttendanceStatus attendanceStatus;
 
     @ManyToOne
     @JoinColumn(name = "student_id", nullable = false)
