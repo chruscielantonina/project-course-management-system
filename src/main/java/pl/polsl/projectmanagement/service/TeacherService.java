@@ -15,15 +15,15 @@ import java.util.UUID;
 public class TeacherService {
     private final TeacherRepository teacherRepository;
 
-    public List<Teacher> getAllTeacher() {
+    public List<Teacher> getAllTeachers() {
         return teacherRepository.findAll();
     }
 
-    public Optional<Teacher> getStudentById(UUID id) {
+    public Optional<Teacher> getTeacherById(UUID id) {
         return teacherRepository.findById(id);
     }
 
-    public Optional<Teacher> getStudentByEmail(String email) {
+    public Optional<Teacher> getTeacherByEmail(String email) {
         return teacherRepository.findByTEmail(email);
     }
 
