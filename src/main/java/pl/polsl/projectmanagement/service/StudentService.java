@@ -47,4 +47,13 @@ public class StudentService {
             return false;
         }
     }
+
+    public boolean signOutFromSection(UUID studentId, UUID sectionId) {
+        return studentSectionRepository.findEnrollment(studentId, sectionId)
+                .map(enrollment -> {
+                    studentSectionRepository.delete(enrollment);
+                    return true;
+                }).orElse(false);
+    }
+
 }
