@@ -5,8 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.CreateAccountRequest;
 import pl.polsl.projectmanagement.dto.EditAccountRequest;
+import pl.polsl.projectmanagement.model.Student;
+import pl.polsl.projectmanagement.model.Teacher;
 import pl.polsl.projectmanagement.service.AdminService;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -16,6 +19,16 @@ import java.util.UUID;
 public class AdminController {
 
     private final AdminService adminService;
+
+    @GetMapping("/students")
+    public ResponseEntity<List<Student>> getAllStudents() {
+        return ResponseEntity.ok(adminService.getAllStudents());
+    }
+
+    @GetMapping("/teachers")
+    public ResponseEntity<List<Teacher>> getAllTeachers() {
+        return ResponseEntity.ok(adminService.getAllTeachers());
+    }
 
     @PostMapping("/accounts")
     public ResponseEntity<String> createAccount(@RequestBody CreateAccountRequest request) {

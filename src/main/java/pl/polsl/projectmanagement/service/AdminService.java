@@ -8,6 +8,7 @@ import pl.polsl.projectmanagement.model.Teacher;
 import pl.polsl.projectmanagement.repository.StudentRepository;
 import pl.polsl.projectmanagement.repository.TeacherRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -16,6 +17,14 @@ public class AdminService {
 
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
+
+    public List<Student> getAllStudents() {
+        return studentRepository.findAll();
+    }
+
+    public List<Teacher> getAllTeachers() {
+        return teacherRepository.findAll();
+    }
 
     public boolean createAccount(String firstName, String lastName, String email, AccountType accountType) {
         try {
