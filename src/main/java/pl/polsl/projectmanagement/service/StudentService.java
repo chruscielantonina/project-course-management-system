@@ -56,4 +56,15 @@ public class StudentService {
                 }).orElse(false);
     }
 
+    @Transactional
+    public boolean changeSection(UUID studentId, UUID oldSectionId, UUID newSectionId) {
+        if (!sectionRepository.existsById(newSectionId)) {
+            return false;
+        }
+        if (signOutFromSection(studentId, oldSectionId)) {
+            return signUpForSection(studentId, newSectionId);
+        }
+        return false;
+    }
+
 }
