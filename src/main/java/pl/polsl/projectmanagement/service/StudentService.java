@@ -3,6 +3,7 @@ package pl.polsl.projectmanagement.service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.polsl.projectmanagement.model.Attendance;
 import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.model.Student;
 import pl.polsl.projectmanagement.model.StudentSection;
@@ -65,6 +66,14 @@ public class StudentService {
             return signUpForSection(studentId, newSectionId);
         }
         return false;
+    }
+
+    public List<Attendance> reviewAttendance(UUID studentId) {
+
+        if (!studentRepository.existsById(studentId)) {
+            return List.of();
+        }
+        return attendanceRepository.findAllByStudentId(studentId);
     }
 
 }
