@@ -3,8 +3,14 @@ package pl.polsl.projectmanagement.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.polsl.projectmanagement.model.Section;
+import pl.polsl.projectmanagement.model.SectionStatus;
 import pl.polsl.projectmanagement.model.Teacher;
+import pl.polsl.projectmanagement.model.Topic;
+import pl.polsl.projectmanagement.repository.SectionRepository;
+import pl.polsl.projectmanagement.repository.StudentSectionRepository;
 import pl.polsl.projectmanagement.repository.TeacherRepository;
+import pl.polsl.projectmanagement.repository.TopicRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,38 +20,38 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeacherService {
     private final TeacherRepository teacherRepository;
+    private final TopicRepository topicRepository;
+    private final SectionRepository sectionRepository;
+    private final StudentSectionRepository studentSectionRepository;
 
-    public List<Teacher> getAllTeachers() {
-        return teacherRepository.findAll();
-    }
-
-    public Optional<Teacher> getTeacherById(UUID id) {
-        return teacherRepository.findById(id);
-    }
-
-    public Optional<Teacher> getTeacherByEmail(String email) {
-        return teacherRepository.findByTEmail(email);
+    @Transactional
+    public Topic addTopic(String name, String description) {
+        Topic topic = new Topic();
+        topic.setToName(name);
+        topic.setToDescription(description);
+        return topicRepository.save(topic);
     }
 
     @Transactional
-    public Teacher createTeacher(Teacher teacher) {
-        return teacherRepository.save(teacher);
-    }
-
-    @Transactional
-    public Teacher updateTeacher(UUID id, Teacher updatedTeacher) {
-        Teacher teacher = teacherRepository.findById(id)
+    public Section addSection(UUID teacherId, UUID topicId) {
+        Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
+        Topic topic = topicRepository.findById(topicId)
+                .orElseThrow(() -> new RuntimeException("Topic not found"));
 
-        teacher.setTFirstName(updatedTeacher.getTFirstName());
-        teacher.setTLastName(updatedTeacher.getTLastName());
-        teacher.setTEmail(updatedTeacher.getTEmail());
-
-        return teacherRepository.save(teacher);
+        Section section = new Section();
+        section.setTeacher(teacher);
+        section.setTopic(topic);
+        section.setSeState(SectionStatus.CLOSED);
+        return sectionRepository.save(section);
     }
 
     @Transactional
-    public void deleteTeacher(UUID id) {
-        teacherRepository.deleteById(id);
+    public boolean addGrade(UUID studentSectionId, String grade) {
+        return studentSectionRepository.findById(studentSectionId).map(ss -> {
+            ss.setGrade(grade);
+            studentSectionRepository.save(ss);
+            return true;
+        }).orElse(false);
     }
 }
