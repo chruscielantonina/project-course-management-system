@@ -39,6 +39,26 @@ public class TeacherService {
     }
 
     @Transactional
+    public Topic updateTopic(UUID topicId, String name, String description, boolean isActive) {
+        Topic topic = topicRepository.findById(topicId)
+                .orElseThrow(() -> new RuntimeException("Topic not found"));
+
+        topic.setToName(name);
+        topic.setToDescription(description);
+        topic.setActive(isActive);
+
+        return topicRepository.save(topic);
+    }
+
+    @Transactional
+    public void deleteTopic(UUID topicId) {
+        if(!topicRepository.existsById(topicId)) {
+            throw new RuntimeException("Topic not found");
+        }
+        topicRepository.deleteById(topicId);
+    }
+
+    @Transactional
     public Section addSection(UUID teacherId, UUID topicId) {
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
