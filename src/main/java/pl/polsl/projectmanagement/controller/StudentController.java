@@ -51,5 +51,9 @@ public class StudentController {
         return ResponseEntity.badRequest().body("Error changing section.");
     }
 
-
+    @GetMapping("/{studentId}/attendance")
+    public ResponseEntity<List<Attendance>> getAttendance(@PathVariable UUID studentId) {
+        List<Attendance> attendances = studentService.reviewAttendance(studentId);
+        return ResponseEntity.ok(attendances);
+    }
 }
