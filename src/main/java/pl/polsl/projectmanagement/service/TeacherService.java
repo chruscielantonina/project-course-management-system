@@ -24,6 +24,10 @@ public class TeacherService {
     private final SectionRepository sectionRepository;
     private final StudentSectionRepository studentSectionRepository;
 
+    public List<Topic> getAllTopics() {
+        return topicRepository.findAll();
+    }
+
     @Transactional
     public Topic addTopic(String name, String description, boolean isActive, UUID teacherId) {
 

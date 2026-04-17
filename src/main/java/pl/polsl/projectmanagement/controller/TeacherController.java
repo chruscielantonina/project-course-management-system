@@ -7,6 +7,7 @@ import pl.polsl.projectmanagement.dto.CreateTopicRequest;
 import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.model.Teacher;
 import pl.polsl.projectmanagement.model.Topic;
+import pl.polsl.projectmanagement.repository.TopicRepository;
 import pl.polsl.projectmanagement.service.TeacherService;
 
 import java.util.List;
@@ -18,6 +19,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeacherController {
     private final TeacherService teacherService;
+    private final TopicRepository topicRepository;
+
+    @GetMapping("/topics")
+    public ResponseEntity<List<Topic>> getAllTopics() {
+        return ResponseEntity.ok(teacherService.getAllTopics());
+    }
 
     @PostMapping("/topics")
     public ResponseEntity<Topic> addTopic(@RequestBody CreateTopicRequest request) {
@@ -25,6 +32,20 @@ public class TeacherController {
                                                          request.getDescription(),
                                                          request.isActive(),
                                                          request.getTeacherId()));
+    }
+
+    @PutMapping("/topics/{id}")
+    public ResponseEntity<Topic> updateTopic(@PathVariable UUID id, @RequestBody CreateTopicRequest request) {
+        return ResponseEntity.ok(teacherService.updateTopic(id,
+                                                            request.getName(),
+                                                            request.getDescription(),
+                                                            request.isActive()));
+    }
+
+    @DeleteMapping("/topics")
+    public ResponseEntity<Void> deleteTopic(@PathVariable UUID id) {
+        teacherService.deleteTopic(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{teacherId}/sections/{topicId}")
