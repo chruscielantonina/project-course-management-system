@@ -21,7 +21,10 @@ public class TeacherController {
 
     @PostMapping("/topics")
     public ResponseEntity<Topic> addTopic(@RequestBody CreateTopicRequest request) {
-        return ResponseEntity.ok(teacherService.addTopic(request.getName(), request.getDescription()));
+        return ResponseEntity.ok(teacherService.addTopic(request.getName(),
+                                                         request.getDescription(),
+                                                         request.isActive(),
+                                                         request.getTeacherId()));
     }
 
     @PostMapping("/{teacherId}/sections/{topicId}")

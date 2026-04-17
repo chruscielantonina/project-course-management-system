@@ -25,10 +25,16 @@ public class TeacherService {
     private final StudentSectionRepository studentSectionRepository;
 
     @Transactional
-    public Topic addTopic(String name, String description) {
+    public Topic addTopic(String name, String description, boolean isActive, UUID teacherId) {
+
+        Teacher teacher = teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
         Topic topic = new Topic();
         topic.setToName(name);
         topic.setToDescription(description);
+        topic.setActive(isActive);
+        topic.setTeacher(teacher);
         return topicRepository.save(topic);
     }
 

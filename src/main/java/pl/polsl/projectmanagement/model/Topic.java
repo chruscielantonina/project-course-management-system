@@ -20,4 +20,11 @@ public class Topic {
 
     @Column(columnDefinition = "TEXT")
     private String toDescription;
+
+    @Column(nullable = false)
+    private boolean isActive = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id", nullable = false)
+    private Teacher teacher;
 }
