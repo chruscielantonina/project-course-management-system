@@ -34,6 +34,22 @@ public class StudentController {
         return ResponseEntity.notFound().build();
     }
 
+    @PutMapping("/{studentId}/sections/change")
+    public ResponseEntity<String> changeSection(
+            @PathVariable UUID studentId,
+            @RequestBody ChangeSectionRequest request) {
+
+        boolean success = studentService.changeSection(
+                studentId,
+                request.getOldSectionId(),
+                request.getNewSectionId()
+        );
+
+        if (success) {
+            return ResponseEntity.ok("Section has been changed successfully.");
+        }
+        return ResponseEntity.badRequest().body("Error changing section.");
+    }
 
 
 }
