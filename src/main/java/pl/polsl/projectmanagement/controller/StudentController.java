@@ -26,4 +26,14 @@ public class StudentController {
         }
     }
 
+    @DeleteMapping("/{studentId}/sections/{sectionId}")
+    public ResponseEntity<Void> signOutFromSection(@PathVariable UUID studentId, @PathVariable UUID sectionId) {
+        if (studentService.signOutFromSection(studentId, sectionId)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+
+
 }
