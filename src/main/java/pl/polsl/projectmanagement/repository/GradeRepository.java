@@ -3,12 +3,13 @@ package pl.polsl.projectmanagement.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import pl.polsl.projectmanagement.model.Attendance;
 import pl.polsl.projectmanagement.model.Grade;
 
 import java.util.List;
 import java.util.UUID;
 
-public interface GradeRepository {
+public interface GradeRepository extends JpaRepository<Grade, UUID>{
     @Query("SELECT g FROM Grade g WHERE g.studentSection.student.sID = :studentId")
     List<Grade> findAllByStudentId(@Param("studentId") UUID studentId);
 
