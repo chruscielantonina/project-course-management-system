@@ -15,4 +15,9 @@ public class Grade {
 
     @Column
     private int grade;
+
+    @ManyToOne
+    @JoinColumn(name = "student_section_id",nullable = false)
+    private StudentSection studentSection;
+
 }
