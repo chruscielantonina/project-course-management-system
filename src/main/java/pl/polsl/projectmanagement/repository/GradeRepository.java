@@ -9,15 +9,15 @@ import java.util.List;
 import java.util.UUID;
 
 public interface GradeRepository {
-    @Query("SELECT g FROM Grade g WHERE g.studentSection.student.sID = :studentID")
-    List<Grade> findAllByStudentId(@Param("studentId")UUID studentId);
+    @Query("SELECT g FROM Grade g WHERE g.studentSection.student.sID = :studentId")
+    List<Grade> findAllByStudentId(@Param("studentId") UUID studentId);
 
     @Query("SELECT g FROM Grade g WHERE g.studentSection.student.sID = :studentId " +
             "AND g.studentSection.section.seID = :sectionId")
     List<Grade> findAllByStudentIdAndSectionId(@Param("studentId") UUID studentId,
                                                @Param("sectionId") UUID sectionId);
 
-    @Query("SELECT g FROM Grade g WHERE g.studentSection.id = :studentSectionID")
-    List<Grade> findAllByStudentSectionId(@Param("studentSectionId") UUID studentSection);
+    @Query("SELECT g FROM Grade g WHERE g.studentSection.id = :studentSectionId")
+    List<Grade> findAllByStudentSectionId(@Param("studentSectionId") UUID studentSectionId);
 
 }
