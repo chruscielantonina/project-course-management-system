@@ -14,5 +14,5 @@ public class Grade {
     private UUID grID;
 
     @Column
-    private int ocena;
+    private int grade;
 }
