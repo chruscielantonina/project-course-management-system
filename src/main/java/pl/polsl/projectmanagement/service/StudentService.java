@@ -79,6 +79,12 @@ public class StudentService {
         return gradeRepository.findAllByStudentId(studentId);
     }
 
+    public List<Grade> reviewGradesForSection(UUID studentId, UUID sectionId) {
+        if (studentSectionRepository.findEnrollment(studentId,sectionId).isEmpty()){
+            return List.of();
+        }
+        return gradeRepository.findAllByStudentIdAndSectionId(studentId,sectionId);
+    }
 
 
 }
