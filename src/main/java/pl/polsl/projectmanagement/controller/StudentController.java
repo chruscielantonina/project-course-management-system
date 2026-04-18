@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.ChangeSectionRequest;
 import pl.polsl.projectmanagement.model.Attendance;
+import pl.polsl.projectmanagement.model.Grade;
 import pl.polsl.projectmanagement.service.StudentService;
 
 import java.util.List;
@@ -55,5 +56,19 @@ public class StudentController {
     public ResponseEntity<List<Attendance>> getAttendance(@PathVariable UUID studentId) {
         List<Attendance> attendances = studentService.reviewAttendance(studentId);
         return ResponseEntity.ok(attendances);
+    }
+
+    @GetMapping("/{studentId}/grades")
+    public ResponseEntity<List<Grade>> getAllGrades(@PathVariable UUID studentId) {
+        return ResponseEntity.ok(studentService.reviewGrades(studentId));
+    }
+
+    @GetMapping("/{studentId}/sections/{sectionId}/grades")
+    public ResponseEntity<List<Grade>> getGradesForSection(
+            @PathVariable UUID studentId,
+            @PathVariable UUID sectionId) {
+
+        List<Grade> grades = studentService.reviewGradesForSection(studentId, sectionId);
+        return ResponseEntity.ok(grades);
     }
 }
