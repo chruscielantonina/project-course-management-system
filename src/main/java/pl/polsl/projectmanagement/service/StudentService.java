@@ -3,14 +3,9 @@ package pl.polsl.projectmanagement.service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import pl.polsl.projectmanagement.model.Attendance;
-import pl.polsl.projectmanagement.model.Section;
-import pl.polsl.projectmanagement.model.Student;
-import pl.polsl.projectmanagement.model.StudentSection;
-import pl.polsl.projectmanagement.repository.AttendanceRepository;
-import pl.polsl.projectmanagement.repository.SectionRepository;
-import pl.polsl.projectmanagement.repository.StudentRepository;
-import pl.polsl.projectmanagement.repository.StudentSectionRepository;
+import org.springframework.web.bind.annotation.GetMapping;
+import pl.polsl.projectmanagement.model.*;
+import pl.polsl.projectmanagement.repository.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,6 +19,7 @@ public class StudentService {
     private final SectionRepository sectionRepository;
     private final StudentSectionRepository studentSectionRepository;
     private final AttendanceRepository attendanceRepository;
+    private final GradeRepository gradeRepository;
 
     public boolean signUpForSection(UUID studentID, UUID sectionID) {
         try{
@@ -75,5 +71,14 @@ public class StudentService {
         }
         return attendanceRepository.findAllByStudentId(studentId);
     }
+
+    public List<Grade> reviewGrades(UUID studentId) {
+        if (!studentRepository.existsById(studentId)) {
+            return List.of();
+        }
+        return gradeRepository.findAllByStudentId(studentId);
+    }
+
+
 
 }
