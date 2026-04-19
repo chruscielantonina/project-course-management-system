@@ -58,6 +58,12 @@ public class TeacherController {
         return ResponseEntity.status(201).build();
     }
 
+    @DeleteMapping("/{teacherId}/sections/{sectionId}")
+    public ResponseEntity<Void> deleteSection(@PathVariable UUID sectionId, @PathVariable UUID teacherId) {
+        teacherService.deleteSection(sectionId, teacherId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/grades/{studentSectionId}")
     public ResponseEntity<Void> addGrade(@PathVariable UUID studentSectionId, @RequestParam String grade) {
         if (teacherService.addGrade(studentSectionId, grade)) {

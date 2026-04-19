@@ -107,6 +107,16 @@ public class TeacherService {
     }
 
     @Transactional
+    public void deleteSection(UUID sectionId, UUID currentUserId) {
+        Section section = sectionRepository.findById(sectionId).orElseThrow(() -> new RuntimeException("Section not found"));
+
+        if(!section.getTeacher().getTID().equals(currentUserId)) {
+            throw new RuntimeException("You do not have permission to delete this section");
+        }
+        sectionRepository.delete(section);
+    }
+
+    @Transactional
     public boolean addGrade(UUID studentSectionId, String grade) {
         return studentSectionRepository.findById(studentSectionId).map(ss -> {
             ss.setGrade(grade);
