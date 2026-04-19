@@ -3,9 +3,7 @@ package pl.polsl.projectmanagement.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.polsl.projectmanagement.dto.CreateSectionRequest;
-import pl.polsl.projectmanagement.dto.CreateTopicRequest;
-import pl.polsl.projectmanagement.dto.SectionDashboardResponse;
+import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.model.Topic;
 import pl.polsl.projectmanagement.service.TeacherService;
@@ -62,6 +60,21 @@ public class TeacherController {
     public ResponseEntity<Void> deleteSection(@PathVariable UUID sectionId, @PathVariable UUID teacherId) {
         teacherService.deleteSection(sectionId, teacherId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/students/available")
+    public ResponseEntity<List<StudentBasicResponse>> getAvailableStudents() {
+        return ResponseEntity.ok(teacherService.getAvailableStudents());
+    }
+
+    @PostMapping("/{teacherId}/sections/{sectionId}/students")
+    public ResponseEntity<Void> assignStudents(
+            @PathVariable UUID sectionId,
+            @PathVariable UUID teacherId,
+            @RequestBody AssignStudentsRequest request) {
+
+        teacherService.assignStudentsToSection(sectionId, teacherId, request);
+        return ResponseEntity.status(201).build();
     }
 
     @PatchMapping("/grades/{studentSectionId}")

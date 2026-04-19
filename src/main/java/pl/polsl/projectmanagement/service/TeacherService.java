@@ -3,17 +3,12 @@ package pl.polsl.projectmanagement.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.polsl.projectmanagement.dto.AssignStudentsRequest;
 import pl.polsl.projectmanagement.dto.CreateSectionRequest;
 import pl.polsl.projectmanagement.dto.SectionDashboardResponse;
 import pl.polsl.projectmanagement.dto.StudentBasicResponse;
-import pl.polsl.projectmanagement.model.Section;
-import pl.polsl.projectmanagement.model.SectionStatus;
-import pl.polsl.projectmanagement.model.Teacher;
-import pl.polsl.projectmanagement.model.Topic;
-import pl.polsl.projectmanagement.repository.SectionRepository;
-import pl.polsl.projectmanagement.repository.StudentSectionRepository;
-import pl.polsl.projectmanagement.repository.TeacherRepository;
-import pl.polsl.projectmanagement.repository.TopicRepository;
+import pl.polsl.projectmanagement.model.*;
+import pl.polsl.projectmanagement.repository.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +20,7 @@ public class TeacherService {
     private final TopicRepository topicRepository;
     private final SectionRepository sectionRepository;
     private final StudentSectionRepository studentSectionRepository;
+    private final StudentRepository studentRepository;
 
     public List<Topic> getAllTopics() {
         return topicRepository.findAll();
@@ -114,6 +110,50 @@ public class TeacherService {
             throw new RuntimeException("You do not have permission to delete this section");
         }
         sectionRepository.delete(section);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StudentBasicResponse> getAvailableStudents() {
+        return studentRepository.findAvailableStudents().stream()
+                .map(s -> new StudentBasicResponse(
+                        s.getSID(),
+                        s.getSFirstName() + " " + s.getSLastName()
+                )).toList();
+    }
+
+    @Transactional
+    public void assignStudentsToSection(UUID sectionId, UUID currentUserId, AssignStudentsRequest request) {
+        Section section= sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new RuntimeException("Section not found"));
+
+        if(!section.getTeacher().getTID().equals(currentUserId)) {
+            throw new RuntimeException("You do not have permission to manage this section");
+        }
+
+        int currentStudentsCount = section.getEnrolledStudents().size();
+        int studentsToAddCount = request.studentIds().size();
+
+        if (currentStudentsCount + studentsToAddCount > section.getMaxCapacity()) {
+            throw new RuntimeException("Cannot add students: Section capacity exceeded");
+        }
+
+        for (UUID studentId : request.studentIds()) {
+            Student student = studentRepository.findById(studentId)
+                    .orElseThrow(() -> new RuntimeException("Student with ID " + studentId + " not found"));
+
+            List<StudentSection> existingEnrollments = studentSectionRepository.findAllByStudentId(studentId);
+            if (!existingEnrollments.isEmpty()) {
+                throw new RuntimeException("Student " + student.getSFirstName() + " is already enrolled in a section");
+            }
+
+            StudentSection newEnrollment = new StudentSection();
+            newEnrollment.setSection(section);
+            newEnrollment.setStudent(student);
+            newEnrollment.setEnrollmentDate(java.time.LocalDate.now());
+            newEnrollment.setStatus("REGISTERED");
+
+            studentSectionRepository.save(newEnrollment);
+        }
     }
 
     @Transactional
