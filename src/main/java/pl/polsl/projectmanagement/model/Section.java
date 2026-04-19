@@ -28,7 +28,7 @@ public class Section {
 
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudentSection> enrolledStudents = new ArrayList<>();
-    
+
     @ManyToOne
     @JoinColumn(name = "topic_id", nullable = false)
     private Topic topic;
