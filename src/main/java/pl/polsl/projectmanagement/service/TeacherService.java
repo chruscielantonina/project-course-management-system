@@ -112,15 +112,6 @@ public class TeacherService {
         sectionRepository.delete(section);
     }
 
-    @Transactional(readOnly = true)
-    public List<StudentBasicResponse> getAvailableStudents() {
-        return studentRepository.findAvailableStudents().stream()
-                .map(s -> new StudentBasicResponse(
-                        s.getSID(),
-                        s.getSFirstName() + " " + s.getSLastName()
-                )).toList();
-    }
-
     @Transactional
     public void assignStudentsToSection(UUID sectionId, UUID currentUserId, AssignStudentsRequest request) {
         Section section= sectionRepository.findById(sectionId)

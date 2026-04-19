@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.ChangeSectionRequest;
+import pl.polsl.projectmanagement.dto.StudentBasicResponse;
 import pl.polsl.projectmanagement.model.Attendance;
 import pl.polsl.projectmanagement.model.Grade;
 import pl.polsl.projectmanagement.service.StudentService;
@@ -70,5 +71,10 @@ public class StudentController {
 
         List<Grade> grades = studentService.reviewGradesForSection(studentId, sectionId);
         return ResponseEntity.ok(grades);
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<List<StudentBasicResponse>> getAvailableStudents() {
+        return ResponseEntity.ok(studentService.getAvailableStudents());
     }
 }

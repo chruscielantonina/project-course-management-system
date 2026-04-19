@@ -4,6 +4,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
+import pl.polsl.projectmanagement.dto.StudentBasicResponse;
 import pl.polsl.projectmanagement.model.*;
 import pl.polsl.projectmanagement.repository.*;
 
@@ -86,5 +87,12 @@ public class StudentService {
         return gradeRepository.findAllByStudentIdAndSectionId(studentId,sectionId);
     }
 
-
+    @Transactional(readOnly = true)
+    public List<StudentBasicResponse> getAvailableStudents() {
+        return studentRepository.findAvailableStudents().stream()
+                .map(s -> new StudentBasicResponse(
+                        s.getSID(),
+                        s.getSFirstName() + " " + s.getSLastName()
+                )).toList();
+    }
 }

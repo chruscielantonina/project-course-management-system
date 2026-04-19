@@ -62,11 +62,6 @@ public class TeacherController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/students/available")
-    public ResponseEntity<List<StudentBasicResponse>> getAvailableStudents() {
-        return ResponseEntity.ok(teacherService.getAvailableStudents());
-    }
-
     @PostMapping("/{teacherId}/sections/{sectionId}/students")
     public ResponseEntity<Void> assignStudents(
             @PathVariable UUID sectionId,
