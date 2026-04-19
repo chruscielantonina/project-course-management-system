@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.CreateTopicRequest;
+import pl.polsl.projectmanagement.dto.SectionDashboardResponse;
 import pl.polsl.projectmanagement.model.Section;
-import pl.polsl.projectmanagement.model.Teacher;
 import pl.polsl.projectmanagement.model.Topic;
-import pl.polsl.projectmanagement.repository.TopicRepository;
 import pl.polsl.projectmanagement.service.TeacherService;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -19,7 +17,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TeacherController {
     private final TeacherService teacherService;
-    private final TopicRepository topicRepository;
 
     @GetMapping("/topics")
     public ResponseEntity<List<Topic>> getAllTopics() {
@@ -46,6 +43,12 @@ public class TeacherController {
     public ResponseEntity<Void> deleteTopic(@PathVariable UUID id) {
         teacherService.deleteTopic(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/sections")
+    public ResponseEntity<List<SectionDashboardResponse>> getDashboardSections() {
+        List<SectionDashboardResponse> response = teacherService.getSectionsForDashboard();
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{teacherId}/sections/{topicId}")
