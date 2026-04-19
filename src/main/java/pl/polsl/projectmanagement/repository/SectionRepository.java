@@ -11,8 +11,9 @@ public interface SectionRepository extends JpaRepository<Section, UUID> {
     List<Section> findBySeState(SectionStatus status);
 
     @Query("SELECT DISTINCT s FROM Section s " +
-            " JOIN FETCH s.teacher " +
+            " JOIN FETCH s.teacher t " +
             "LEFT JOIN FETCH s.enrolledStudents ss " +
-            "LEFT JOIN FETCH ss.student")
-    List<Section> findAllWithDetails();
+            "LEFT JOIN FETCH ss.student " +
+            "WHERE t.tID = :teacherId")
+    List<Section> findAllByTeacherIdWithDetails();
 }

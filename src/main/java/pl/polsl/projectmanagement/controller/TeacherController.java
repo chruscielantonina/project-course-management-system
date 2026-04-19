@@ -45,9 +45,9 @@ public class TeacherController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/sections")
-    public ResponseEntity<List<SectionDashboardResponse>> getDashboardSections() {
-        List<SectionDashboardResponse> response = teacherService.getSectionsForDashboard();
+    @GetMapping("/{teacherId}/sections")
+    public ResponseEntity<List<SectionDashboardResponse>> getDashboardSections(@PathVariable UUID teacherId) {
+        List<SectionDashboardResponse> response = teacherService.getSectionsForDashboard(teacherId);
         return ResponseEntity.ok(response);
     }
 

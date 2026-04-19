@@ -78,8 +78,8 @@ public class TeacherService {
     }
 
     @Transactional(readOnly = true)
-    public List<SectionDashboardResponse> getSectionsForDashboard() {
-        List<Section> sections = sectionRepository.findAllWithDetails();
+    public List<SectionDashboardResponse> getSectionsForDashboard(UUID currentUserId) {
+        List<Section> sections = sectionRepository.findAllByTeacherIdWithDetails();
 
         return sections.stream().map(section -> {
             List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
