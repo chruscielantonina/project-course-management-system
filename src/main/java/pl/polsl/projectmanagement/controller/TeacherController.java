@@ -3,6 +3,7 @@ package pl.polsl.projectmanagement.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.polsl.projectmanagement.dto.CreateSectionRequest;
 import pl.polsl.projectmanagement.dto.CreateTopicRequest;
 import pl.polsl.projectmanagement.dto.SectionDashboardResponse;
 import pl.polsl.projectmanagement.model.Section;
@@ -51,9 +52,10 @@ public class TeacherController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{teacherId}/sections/{topicId}")
-    public ResponseEntity<Section> addSection(@PathVariable UUID teacherId, @PathVariable UUID topicId) {
-        return ResponseEntity.ok(teacherService.addSection(teacherId, topicId));
+    @PostMapping("/{teacherId}/sections")
+    public ResponseEntity<Section> addSection(@PathVariable UUID teacherId, @RequestBody CreateSectionRequest request) {
+        teacherService.addSection(teacherId, request);
+        return ResponseEntity.status(201).build();
     }
 
     @PatchMapping("/grades/{studentSectionId}")

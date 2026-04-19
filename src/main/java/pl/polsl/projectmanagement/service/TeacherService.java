@@ -3,6 +3,7 @@ package pl.polsl.projectmanagement.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.polsl.projectmanagement.dto.CreateSectionRequest;
 import pl.polsl.projectmanagement.dto.SectionDashboardResponse;
 import pl.polsl.projectmanagement.dto.StudentBasicResponse;
 import pl.polsl.projectmanagement.model.Section;
@@ -64,17 +65,21 @@ public class TeacherService {
     }
 
     @Transactional
-    public Section addSection(UUID teacherId, UUID topicId) {
+    public UUID addSection(UUID teacherId, CreateSectionRequest request) {
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
-        Topic topic = topicRepository.findById(topicId)
+        Topic topic = topicRepository.findById(request.topicId())
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
 
         Section section = new Section();
         section.setTeacher(teacher);
         section.setTopic(topic);
+        section.setMaxCapacity(request.maxCapacity());
         section.setSeState(SectionStatus.CLOSED);
-        return sectionRepository.save(section);
+
+        Section savedSection = sectionRepository.save(section);
+
+        return savedSection.getSeID();
     }
 
     @Transactional(readOnly = true)
