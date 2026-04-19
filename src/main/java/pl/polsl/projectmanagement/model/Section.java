@@ -20,6 +20,9 @@ public class Section {
     @Column(nullable = false)
     private SectionStatus seState;
 
+    @Column(nullable = false)
+    private int maxCapacity;
+
     @ManyToOne
     @JoinColumn(name = "topic_id", nullable = false)
     private Topic topic;
