@@ -3,6 +3,8 @@ package pl.polsl.projectmanagement.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.polsl.projectmanagement.dto.SectionDashboardResponse;
+import pl.polsl.projectmanagement.dto.StudentBasicResponse;
 import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.model.SectionStatus;
 import pl.polsl.projectmanagement.model.Teacher;
@@ -13,7 +15,6 @@ import pl.polsl.projectmanagement.repository.TeacherRepository;
 import pl.polsl.projectmanagement.repository.TopicRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -74,6 +75,30 @@ public class TeacherService {
         section.setTopic(topic);
         section.setSeState(SectionStatus.CLOSED);
         return sectionRepository.save(section);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SectionDashboardResponse> getSectionsForDashboard() {
+        List<Section> sections = sectionRepository.findAllWithDetails();
+
+        return sections.stream().map(section -> {
+            List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
+                    .map(ss -> new StudentBasicResponse(
+                            ss.getStudent().getSID(),
+                            ss.getStudent().getSFirstName() + " " + ss.getStudent().getSLastName()
+                    )).toList();
+
+            String teacherName = section.getTeacher().getTFirstName() + " " + section.getTeacher().getTLastName();
+
+            return new SectionDashboardResponse(
+                    section.getSeID(),
+                    section.getSeState().name(),
+                    teacherName,
+                    students.size(),
+                    section.getMaxCapacity(),
+                    students
+            );
+        }).toList();
     }
 
     @Transactional
