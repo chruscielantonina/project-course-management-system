@@ -72,9 +72,4 @@ public class StudentController {
         List<Grade> grades = studentService.reviewGradesForSection(studentId, sectionId);
         return ResponseEntity.ok(grades);
     }
-
-    @GetMapping("/available")
-    public ResponseEntity<List<StudentBasicResponse>> getAvailableStudents() {
-        return ResponseEntity.ok(studentService.getAvailableStudents());
-    }
 }

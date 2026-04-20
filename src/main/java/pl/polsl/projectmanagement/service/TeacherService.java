@@ -155,4 +155,13 @@ public class TeacherService {
             return true;
         }).orElse(false);
     }
+
+    @Transactional(readOnly = true)
+    public List<StudentBasicResponse> getAvailableStudents() {
+        return studentRepository.findAvailableStudents().stream()
+                .map(s -> new StudentBasicResponse(
+                        s.getSID(),
+                        s.getSFirstName() + " " + s.getSLastName()
+                )).toList();
+    }
 }

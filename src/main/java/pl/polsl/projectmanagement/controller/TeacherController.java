@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.model.Topic;
+import pl.polsl.projectmanagement.service.StudentService;
 import pl.polsl.projectmanagement.service.TeacherService;
 
 import java.util.List;
@@ -78,5 +79,10 @@ public class TeacherController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<List<StudentBasicResponse>> getAvailableStudents() {
+        return ResponseEntity.ok(teacherService.getAvailableStudents());
     }
 }
