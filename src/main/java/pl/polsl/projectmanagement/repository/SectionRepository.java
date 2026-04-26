@@ -2,6 +2,7 @@ package pl.polsl.projectmanagement.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.model.SectionStatus;
 import java.util.List;
@@ -15,5 +16,5 @@ public interface SectionRepository extends JpaRepository<Section, UUID> {
             "LEFT JOIN FETCH s.enrolledStudents ss " +
             "LEFT JOIN FETCH ss.student " +
             "WHERE t.tID = :teacherId")
-    List<Section> findAllByTeacherIdWithDetails();
+    List<Section> findAllByTeacherIdWithDetails(@Param("teacherId") UUID teacherId);
 }
