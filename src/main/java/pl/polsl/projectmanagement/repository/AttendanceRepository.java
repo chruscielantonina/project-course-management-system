@@ -17,5 +17,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, UUID> {
     @Query("SELECT a FROM Attendance a WHERE a.student.sID = :studentId AND a.section.seID = :sectionId")
     List<Attendance> findAllByStudentIdAndSectionId(@Param("studentId") UUID studentId, @Param("sectionId") UUID sectionId);
 
-    List<Attendance> findAllBySection_SeIDAndADate(UUID sectionId, LocalDate date);
+    @Query("SELECT a FROM Attendance a WHERE a.section.seID = :sectionId AND a.aDate = :date")
+    List<Attendance> getAttendanceForSectionAndDate(@Param("sectionId") UUID sectionId, @Param("date") LocalDate date);
 }

@@ -92,7 +92,7 @@ public class TeacherController {
         return ResponseEntity.status(201).build();
     }
 
-    @GetMapping("{sectionId}/attendance")
+    @GetMapping("/{sectionId}/attendance")
     public ResponseEntity<List<StudentAttendanceResponse>> getAttendanceForDate(
             @PathVariable UUID sectionId,
             @RequestParam LocalDate date) {

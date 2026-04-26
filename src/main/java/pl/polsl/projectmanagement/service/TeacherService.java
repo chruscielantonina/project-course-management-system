@@ -173,7 +173,7 @@ public class TeacherService {
         Section section = sectionRepository.findById(request.sectionId())
                 .orElseThrow(() -> new RuntimeException("Section not found"));
 
-        List<Attendance> existingRecords = attendanceRepository.findAllBySection_SeIDAndADate(
+        List<Attendance> existingRecords = attendanceRepository.getAttendanceForSectionAndDate(
                 request.sectionId(),
                 request.date()
         );
@@ -215,7 +215,7 @@ public class TeacherService {
         Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new RuntimeException("Section not found"));
 
-        List<Attendance> existingRecords = attendanceRepository.findAllBySection_SeIDAndADate(sectionId, date);
+        List<Attendance> existingRecords = attendanceRepository.getAttendanceForSectionAndDate(sectionId, date);
 
         Map<UUID, AttendanceStatus> attendanceMap = existingRecords.stream()
                 .collect(Collectors.toMap(
