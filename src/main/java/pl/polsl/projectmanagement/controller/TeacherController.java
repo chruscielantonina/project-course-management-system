@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.model.Topic;
-import pl.polsl.projectmanagement.service.StudentService;
 import pl.polsl.projectmanagement.service.TeacherService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -84,5 +84,20 @@ public class TeacherController {
     @GetMapping("/available")
     public ResponseEntity<List<StudentBasicResponse>> getAvailableStudents() {
         return ResponseEntity.ok(teacherService.getAvailableStudents());
+    }
+
+    @PostMapping("/attendance")
+    public ResponseEntity<Void> markAttendance(@RequestBody MarkAttendanceRequest request) {
+        teacherService.markAttendance(request);
+        return ResponseEntity.status(201).build();
+    }
+
+    @GetMapping("{sectionId}/attendance")
+    public ResponseEntity<List<StudentAttendanceResponse>> getAttendanceForDate(
+            @PathVariable UUID sectionId,
+            @RequestParam LocalDate date) {
+
+        List<StudentAttendanceResponse> response = teacherService.getAttendanceList(sectionId, date);
+        return ResponseEntity.ok(response);
     }
 }
