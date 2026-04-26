@@ -20,4 +20,7 @@ public class Semester {
     @NotBlank(message = "Field is required")
     @Column(nullable = false)
     private String semField;
+
+    @Column(nullable = false)
+    private boolean isCurrent = false;
 }

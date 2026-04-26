@@ -73,14 +73,6 @@ public class TeacherController {
         return ResponseEntity.status(201).build();
     }
 
-    @PatchMapping("/grades/{studentSectionId}")
-    public ResponseEntity<Void> addGrade(@PathVariable UUID studentSectionId, @RequestParam String grade) {
-        if (teacherService.addGrade(studentSectionId, grade)) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
-
     @GetMapping("/available")
     public ResponseEntity<List<StudentBasicResponse>> getAvailableStudents() {
         return ResponseEntity.ok(teacherService.getAvailableStudents());
@@ -99,5 +91,16 @@ public class TeacherController {
 
         List<StudentAttendanceResponse> response = teacherService.getAttendanceList(sectionId, date);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{sectionId}/grades")
+    public ResponseEntity<SectionGradesViewResponse> getGradesForSection(@PathVariable UUID sectionId) {
+        return ResponseEntity.ok(teacherService.getGradesList(sectionId));
+    }
+
+    @PutMapping("/grades")
+    public ResponseEntity<Void> saveGradesBulk(@RequestBody SaveGradesRequest request) {
+        teacherService.saveGrades(request);
+        return ResponseEntity.ok().build();
     }
 }

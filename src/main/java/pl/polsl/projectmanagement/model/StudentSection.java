@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.UUID;
+import pl.polsl.projectmanagement.model.Grade;
 
 @Entity
 @Data
@@ -22,7 +23,8 @@ public class StudentSection {
     @JoinColumn(name = "section_id", nullable = false)
     private Section section;
 
-    private String grade;
+    @OneToOne(mappedBy = "studentSection", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Grade grade;
 
     @Column(nullable = false)
     private LocalDate enrollmentDate;

@@ -14,9 +14,9 @@ public class Grade {
     private UUID grID;
 
     @Column
-    private int grade;
+    private String grade;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "student_section_id",nullable = false)
     private StudentSection studentSection;
 

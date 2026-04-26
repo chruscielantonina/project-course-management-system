@@ -4,5 +4,6 @@ import java.util.UUID;
 
 public record CreateSectionRequest(
         UUID topicId,
+        UUID semesterId,
         int maxCapacity
 ) {}
