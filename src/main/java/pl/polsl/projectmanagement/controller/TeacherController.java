@@ -25,21 +25,15 @@ public class TeacherController {
 
     @PostMapping("/topics")
     public ResponseEntity<Topic> addTopic(@RequestBody CreateTopicRequest request) {
-        return ResponseEntity.ok(teacherService.addTopic(request.getName(),
-                                                         request.getDescription(),
-                                                         request.isActive(),
-                                                         request.getTeacherId()));
+        return ResponseEntity.ok(teacherService.addTopic(request));
     }
 
     @PutMapping("/topics/{id}")
     public ResponseEntity<Topic> updateTopic(@PathVariable UUID id, @RequestBody CreateTopicRequest request) {
-        return ResponseEntity.ok(teacherService.updateTopic(id,
-                                                            request.getName(),
-                                                            request.getDescription(),
-                                                            request.isActive()));
+        return ResponseEntity.ok(teacherService.updateTopic(id, request));
     }
 
-    @DeleteMapping("/topics")
+    @DeleteMapping("/topics/{id}")
     public ResponseEntity<Void> deleteTopic(@PathVariable UUID id) {
         teacherService.deleteTopic(id);
         return ResponseEntity.noContent().build();

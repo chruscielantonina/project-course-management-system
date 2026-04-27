@@ -32,27 +32,27 @@ public class TeacherService {
     }
 
     @Transactional
-    public Topic addTopic(String name, String description, boolean isActive, UUID teacherId) {
+    public Topic addTopic(CreateTopicRequest requestDto) {
 
-        Teacher teacher = teacherRepository.findById(teacherId)
+        Teacher teacher = teacherRepository.findById(requestDto.getTeacherId())
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
         Topic topic = new Topic();
-        topic.setToName(name);
-        topic.setToDescription(description);
-        topic.setActive(isActive);
+        topic.setToName(requestDto.getName());
+        topic.setToDescription(requestDto.getDescription());
+        topic.setActive(requestDto.isActive());
         topic.setTeacher(teacher);
         return topicRepository.save(topic);
     }
 
     @Transactional
-    public Topic updateTopic(UUID topicId, String name, String description, boolean isActive) {
+    public Topic updateTopic(UUID topicId, CreateTopicRequest requestDto) {
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
 
-        topic.setToName(name);
-        topic.setToDescription(description);
-        topic.setActive(isActive);
+        topic.setToName(requestDto.getName());
+        topic.setToDescription(requestDto.getDescription());
+        topic.setActive(requestDto.isActive());
 
         return topicRepository.save(topic);
     }
