@@ -27,7 +27,8 @@ public class TeacherController {
 
     @PostMapping("/api/topics")
     public ResponseEntity<TopicResponse> addTopic(@RequestBody CreateTopicRequest request) {
-        return ResponseEntity.ok(topicService.addTopic(request));
+        TopicResponse response = topicService.addTopic(request);
+        return ResponseEntity.status(201).body(response);
     }
 
     @PutMapping("/api/topics/{id}")
@@ -48,9 +49,9 @@ public class TeacherController {
     }
 
     @PostMapping("/api/teachers/{teacherId}/sections")
-    public ResponseEntity<Section> addSection(@PathVariable UUID teacherId, @RequestBody CreateSectionRequest request) {
-        sectionService.addSection(teacherId, request);
-        return ResponseEntity.status(201).build();
+    public ResponseEntity<SectionResponse> addSection(@PathVariable UUID teacherId, @RequestBody CreateSectionRequest request) {
+        SectionResponse response = sectionService.addSection(teacherId, request);
+        return ResponseEntity.status(201).body(response);
     }
 
     @DeleteMapping("/api/teachers/{teacherId}/sections/{sectionId}")
