@@ -6,10 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.model.Topic;
-import pl.polsl.projectmanagement.service.AttendanceService;
-import pl.polsl.projectmanagement.service.SectionService;
-import pl.polsl.projectmanagement.service.TeacherService;
-import pl.polsl.projectmanagement.service.TopicService;
+import pl.polsl.projectmanagement.service.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +20,7 @@ public class TeacherController {
     private final TopicService topicService;
     private final SectionService sectionService;
     private final AttendanceService attendanceService;
+    private final GradeService gradeService;
 
     @GetMapping("/topics")
     public ResponseEntity<List<Topic>> getAllTopics() {
@@ -95,12 +93,12 @@ public class TeacherController {
 
     @GetMapping("/{sectionId}/grades")
     public ResponseEntity<SectionGradesViewResponse> getGradesForSection(@PathVariable UUID sectionId) {
-        return ResponseEntity.ok(teacherService.getGradesList(sectionId));
+        return ResponseEntity.ok(gradeService.getGradesList(sectionId));
     }
 
     @PutMapping("/grades")
     public ResponseEntity<Void> saveGradesBulk(@RequestBody SaveGradesRequest request) {
-        teacherService.saveGrades(request);
+        gradeService.saveGrades(request);
         return ResponseEntity.ok().build();
     }
 }
