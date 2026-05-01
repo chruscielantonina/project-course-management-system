@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequestMapping("/api/teachers")
 @RequiredArgsConstructor
 public class TeacherController {
-    private final TeacherService teacherService;
+
     private final TopicService topicService;
     private final SectionService sectionService;
     private final AttendanceService attendanceService;
