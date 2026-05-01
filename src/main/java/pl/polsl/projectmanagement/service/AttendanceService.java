@@ -26,7 +26,7 @@ public class AttendanceService {
     private final StudentRepository studentRepository;
 
     @Transactional
-    public void markAttendance(MarkAttendanceRequest request) {
+    public void markAttendance(UUID sectionId, MarkAttendanceRequest request) {
 
         Section section = sectionRepository.findById(request.sectionId())
                 .orElseThrow(() -> new RuntimeException("Section not found"));
