@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.model.Topic;
+import pl.polsl.projectmanagement.repository.SectionRepository;
 import pl.polsl.projectmanagement.repository.TopicRepository;
+import pl.polsl.projectmanagement.service.SectionService;
 import pl.polsl.projectmanagement.service.TeacherService;
 import pl.polsl.projectmanagement.service.TopicService;
 
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class TeacherController {
     private final TeacherService teacherService;
     private final TopicService topicService;
+    private final SectionService sectionService;
 
     @GetMapping("/topics")
     public ResponseEntity<List<Topic>> getAllTopics() {
@@ -44,19 +47,19 @@ public class TeacherController {
 
     @GetMapping("/{teacherId}/sections")
     public ResponseEntity<List<SectionDashboardResponse>> getDashboardSections(@PathVariable UUID teacherId) {
-        List<SectionDashboardResponse> response = teacherService.getSectionsForDashboard(teacherId);
+        List<SectionDashboardResponse> response = sectionService.getSectionsForDashboard(teacherId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{teacherId}/sections")
     public ResponseEntity<Section> addSection(@PathVariable UUID teacherId, @RequestBody CreateSectionRequest request) {
-        teacherService.addSection(teacherId, request);
+        sectionService.addSection(teacherId, request);
         return ResponseEntity.status(201).build();
     }
 
     @DeleteMapping("/{teacherId}/sections/{sectionId}")
     public ResponseEntity<Void> deleteSection(@PathVariable UUID sectionId, @PathVariable UUID teacherId) {
-        teacherService.deleteSection(sectionId, teacherId);
+        sectionService.deleteSection(sectionId, teacherId);
         return ResponseEntity.noContent().build();
     }
 
@@ -66,13 +69,13 @@ public class TeacherController {
             @PathVariable UUID teacherId,
             @RequestBody AssignStudentsRequest request) {
 
-        teacherService.assignStudentsToSection(sectionId, teacherId, request);
+        sectionService.assignStudentsToSection(sectionId, teacherId, request);
         return ResponseEntity.status(201).build();
     }
 
     @GetMapping("/available")
     public ResponseEntity<List<StudentBasicResponse>> getAvailableStudents() {
-        return ResponseEntity.ok(teacherService.getAvailableStudents());
+        return ResponseEntity.ok(sectionService.getAvailableStudents());
     }
 
     @PostMapping("/attendance")
