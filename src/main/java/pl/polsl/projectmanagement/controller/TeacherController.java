@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.model.Topic;
-import pl.polsl.projectmanagement.repository.SectionRepository;
-import pl.polsl.projectmanagement.repository.TopicRepository;
+import pl.polsl.projectmanagement.service.AttendanceService;
 import pl.polsl.projectmanagement.service.SectionService;
 import pl.polsl.projectmanagement.service.TeacherService;
 import pl.polsl.projectmanagement.service.TopicService;
@@ -23,6 +22,7 @@ public class TeacherController {
     private final TeacherService teacherService;
     private final TopicService topicService;
     private final SectionService sectionService;
+    private final AttendanceService attendanceService;
 
     @GetMapping("/topics")
     public ResponseEntity<List<Topic>> getAllTopics() {
@@ -80,7 +80,7 @@ public class TeacherController {
 
     @PostMapping("/attendance")
     public ResponseEntity<Void> markAttendance(@RequestBody MarkAttendanceRequest request) {
-        teacherService.markAttendance(request);
+        attendanceService.markAttendance(request);
         return ResponseEntity.status(201).build();
     }
 
@@ -89,7 +89,7 @@ public class TeacherController {
             @PathVariable UUID sectionId,
             @RequestParam LocalDate date) {
 
-        List<StudentAttendanceResponse> response = teacherService.getAttendanceList(sectionId, date);
+        List<StudentAttendanceResponse> response = attendanceService.getAttendanceList(sectionId, date);
         return ResponseEntity.ok(response);
     }
 
