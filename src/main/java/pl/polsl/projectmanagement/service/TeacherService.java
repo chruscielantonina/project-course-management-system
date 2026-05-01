@@ -27,44 +27,6 @@ public class TeacherService {
     private final AttendanceRepository attendanceRepository;
     private final SemesterRepository semesterRepository;
 
-    public List<Topic> getAllTopics() {
-        return topicRepository.findAll();
-    }
-
-    @Transactional
-    public Topic addTopic(CreateTopicRequest requestDto) {
-
-        Teacher teacher = teacherRepository.findById(requestDto.getTeacherId())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
-
-        Topic topic = new Topic();
-        topic.setToName(requestDto.getName());
-        topic.setToDescription(requestDto.getDescription());
-        topic.setActive(requestDto.isActive());
-        topic.setTeacher(teacher);
-        return topicRepository.save(topic);
-    }
-
-    @Transactional
-    public Topic updateTopic(UUID topicId, CreateTopicRequest requestDto) {
-        Topic topic = topicRepository.findById(topicId)
-                .orElseThrow(() -> new RuntimeException("Topic not found"));
-
-        topic.setToName(requestDto.getName());
-        topic.setToDescription(requestDto.getDescription());
-        topic.setActive(requestDto.isActive());
-
-        return topicRepository.save(topic);
-    }
-
-    @Transactional
-    public void deleteTopic(UUID topicId) {
-        if (!topicRepository.existsById(topicId)) {
-            throw new RuntimeException("Topic not found");
-        }
-        topicRepository.deleteById(topicId);
-    }
-
     @Transactional
     public UUID addSection(UUID teacherId, CreateSectionRequest request) {
         Teacher teacher = teacherRepository.findById(teacherId)
