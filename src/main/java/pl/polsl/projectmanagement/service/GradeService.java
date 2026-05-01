@@ -45,7 +45,7 @@ public class GradeService {
 
     @Transactional
     public void saveGrades(UUID sectionId, SaveGradesRequest request) {
-        Section section = sectionRepository.findById(request.sectionId())
+        Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new RuntimeException("Section not found"));
 
         if (!section.getSemester().isCurrent()) {

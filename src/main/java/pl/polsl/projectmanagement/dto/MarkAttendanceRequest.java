@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 public record MarkAttendanceRequest(
-        UUID sectionId,
         LocalDate date,
         List<StudentAttendanceRecordDto> attendance
 ) {

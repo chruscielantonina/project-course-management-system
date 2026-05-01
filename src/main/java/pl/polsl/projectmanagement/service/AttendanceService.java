@@ -28,11 +28,11 @@ public class AttendanceService {
     @Transactional
     public void markAttendance(UUID sectionId, MarkAttendanceRequest request) {
 
-        Section section = sectionRepository.findById(request.sectionId())
+        Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new RuntimeException("Section not found"));
 
         List<Attendance> existingRecords = attendanceRepository.getAttendanceForSectionAndDate(
-                request.sectionId(),
+                sectionId,
                 request.date()
         );
 
