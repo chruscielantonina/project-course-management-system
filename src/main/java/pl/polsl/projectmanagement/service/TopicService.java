@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.polsl.projectmanagement.dto.CreateTopicRequest;
+import pl.polsl.projectmanagement.dto.TopicResponse;
 import pl.polsl.projectmanagement.model.Teacher;
 import pl.polsl.projectmanagement.model.Topic;
 import pl.polsl.projectmanagement.repository.TeacherRepository;
@@ -19,12 +20,15 @@ public class TopicService {
     private final TopicRepository topicRepository;
     private final TeacherRepository teacherRepository;
 
-    public List<Topic> getAllTopics() {
-        return topicRepository.findAll();
+    public List<TopicResponse> getAllTopics() {
+        return topicRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Transactional
-    public Topic addTopic(CreateTopicRequest requestDto) {
+    public TopicResponse addTopic(CreateTopicRequest requestDto) {
 
         Teacher teacher = teacherRepository.findById(requestDto.getTeacherId())
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
@@ -34,11 +38,12 @@ public class TopicService {
         topic.setToDescription(requestDto.getDescription());
         topic.setActive(requestDto.isActive());
         topic.setTeacher(teacher);
-        return topicRepository.save(topic);
+        Topic savedTopic = topicRepository.save(topic);
+        return mapToResponse(savedTopic);
     }
 
     @Transactional
-    public Topic updateTopic(UUID topicId, CreateTopicRequest requestDto) {
+    public TopicResponse updateTopic(UUID topicId, CreateTopicRequest requestDto) {
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
 
@@ -46,7 +51,8 @@ public class TopicService {
         topic.setToDescription(requestDto.getDescription());
         topic.setActive(requestDto.isActive());
 
-        return topicRepository.save(topic);
+        Topic updatedTopic = topicRepository.save(topic);
+        return mapToResponse(updatedTopic);
     }
 
     @Transactional
@@ -55,5 +61,15 @@ public class TopicService {
             throw new RuntimeException("Topic not found");
         }
         topicRepository.deleteById(topicId);
+    }
+
+    private TopicResponse mapToResponse(Topic topic) {
+        return new TopicResponse(
+                topic.getToID(),
+                topic.getToName(),
+                topic.getToDescription(),
+                topic.isActive(),
+                topic.getTeacher().getTFirstName() + " " + topic.getTeacher().getTLastName()
+        );
     }
 }

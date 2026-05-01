@@ -5,7 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.Section;
-import pl.polsl.projectmanagement.model.Topic;
 import pl.polsl.projectmanagement.service.*;
 
 import java.time.LocalDate;
@@ -22,17 +21,17 @@ public class TeacherController {
     private final GradeService gradeService;
 
     @GetMapping("/api/topics")
-    public ResponseEntity<List<Topic>> getAllTopics() {
+    public ResponseEntity<List<TopicResponse>> getAllTopics() {
         return ResponseEntity.ok(topicService.getAllTopics());
     }
 
     @PostMapping("/api/topics")
-    public ResponseEntity<Topic> addTopic(@RequestBody CreateTopicRequest request) {
+    public ResponseEntity<TopicResponse> addTopic(@RequestBody CreateTopicRequest request) {
         return ResponseEntity.ok(topicService.addTopic(request));
     }
 
     @PutMapping("/api/topics/{id}")
-    public ResponseEntity<Topic> updateTopic(@PathVariable UUID id, @RequestBody CreateTopicRequest request) {
+    public ResponseEntity<TopicResponse> updateTopic(@PathVariable UUID id, @RequestBody CreateTopicRequest request) {
         return ResponseEntity.ok(topicService.updateTopic(id, request));
     }
 
