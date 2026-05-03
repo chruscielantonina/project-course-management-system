@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.*;
-import pl.polsl.projectmanagement.model.Section;
 import pl.polsl.projectmanagement.service.*;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
