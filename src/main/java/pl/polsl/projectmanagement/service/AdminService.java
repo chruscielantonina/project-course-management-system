@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.polsl.projectmanagement.model.AccountType;
-import pl.polsl.projectmanagement.model.AppUser;
-import pl.polsl.projectmanagement.model.Student;
-import pl.polsl.projectmanagement.model.Teacher;
+import pl.polsl.projectmanagement.dto.CreateSemesterRequest;
+import pl.polsl.projectmanagement.model.*;
 import pl.polsl.projectmanagement.repository.AppUserRepository;
+import pl.polsl.projectmanagement.repository.SemesterRepository;
 import pl.polsl.projectmanagement.repository.StudentRepository;
 import pl.polsl.projectmanagement.repository.TeacherRepository;
 
@@ -23,6 +22,7 @@ public class AdminService {
     private final TeacherRepository teacherRepository;
     private final AppUserRepository appUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SemesterRepository semesterRepository;
 
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
@@ -102,5 +102,26 @@ public class AdminService {
             teacherRepository.save(teacher);
             return true;
         }).orElse(false);
+    }
+
+    @Transactional
+    public Semester addSemester(CreateSemesterRequest request) {
+
+        if (request.isCurrent()) {
+            List<Semester> currentSemesters = semesterRepository.findAll();
+            currentSemesters.forEach(s -> s.setCurrent(false));
+            semesterRepository.saveAll(currentSemesters);
+        }
+
+        Semester semester = new Semester();
+        semester.setSemYear(request.semYear());
+        semester.setSemField(request.semField());
+        semester.setCurrent(request.isCurrent());
+
+        return semesterRepository.save(semester);
+    }
+
+    public List<Semester> getAllSemesters() {
+        return semesterRepository.findAll();
     }
 }

@@ -1,10 +1,13 @@
 package pl.polsl.projectmanagement.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.CreateAccountRequest;
+import pl.polsl.projectmanagement.dto.CreateSemesterRequest;
 import pl.polsl.projectmanagement.dto.EditAccountRequest;
+import pl.polsl.projectmanagement.model.Semester;
 import pl.polsl.projectmanagement.model.Student;
 import pl.polsl.projectmanagement.model.Teacher;
 import pl.polsl.projectmanagement.service.AdminService;
@@ -90,5 +93,15 @@ public class AdminController {
             return ResponseEntity.ok("Teacher details have been updated.");
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/semesters")
+    public ResponseEntity<Semester> createSemester(@RequestBody @Valid CreateSemesterRequest request) {
+        return ResponseEntity.status(201).body(adminService.addSemester(request));
+    }
+
+    @GetMapping("/semesters")
+    public ResponseEntity<List<Semester>> getAllSemesters() {
+        return ResponseEntity.ok(adminService.getAllSemesters());
     }
 }
