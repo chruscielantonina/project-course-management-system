@@ -12,4 +12,8 @@ public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID aID;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "app_user_id", referencedColumnName = "id")
+    private AppUser appUser;
 }
