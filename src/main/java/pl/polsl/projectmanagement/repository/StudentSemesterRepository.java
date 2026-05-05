@@ -7,4 +7,5 @@ import java.util.UUID;
 
 public interface StudentSemesterRepository extends JpaRepository<StudentSemester, UUID> {
     List<StudentSemester> findByStudentSID(UUID studentId);
+    boolean existsBySemester_SemID(UUID semID);
 }

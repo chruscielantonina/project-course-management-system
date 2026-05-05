@@ -17,4 +17,6 @@ public interface SectionRepository extends JpaRepository<Section, UUID> {
             "LEFT JOIN FETCH ss.student " +
             "WHERE t.tID = :teacherId")
     List<Section> findAllByTeacherIdWithDetails(@Param("teacherId") UUID teacherId);
+
+    boolean existsBySemester_SemID(UUID semID);
 }

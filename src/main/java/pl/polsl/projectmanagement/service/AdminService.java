@@ -5,11 +5,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.polsl.projectmanagement.dto.CreateSemesterRequest;
+import pl.polsl.projectmanagement.dto.UpdateSemesterRequest;
 import pl.polsl.projectmanagement.model.*;
-import pl.polsl.projectmanagement.repository.AppUserRepository;
-import pl.polsl.projectmanagement.repository.SemesterRepository;
-import pl.polsl.projectmanagement.repository.StudentRepository;
-import pl.polsl.projectmanagement.repository.TeacherRepository;
+import pl.polsl.projectmanagement.repository.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +21,8 @@ public class AdminService {
     private final AppUserRepository appUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final SemesterRepository semesterRepository;
+    private final SectionRepository sectionRepository;
+    private final StudentSemesterRepository studentSemesterRepository;
 
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
@@ -108,9 +108,10 @@ public class AdminService {
     public Semester addSemester(CreateSemesterRequest request) {
 
         if (request.isCurrent()) {
-            List<Semester> currentSemesters = semesterRepository.findAll();
-            currentSemesters.forEach(s -> s.setCurrent(false));
-            semesterRepository.saveAll(currentSemesters);
+            semesterRepository.findByIsCurrentTrue().ifPresent(activeSemester -> {
+                activeSemester.setCurrent(false);
+                semesterRepository.save(activeSemester);
+            });
         }
 
         Semester semester = new Semester();
@@ -123,5 +124,40 @@ public class AdminService {
 
     public List<Semester> getAllSemesters() {
         return semesterRepository.findAll();
+    }
+
+    @Transactional
+    public Semester updateSemester(UUID semesterId, UpdateSemesterRequest request) {
+        Semester semester = semesterRepository.findById(semesterId)
+                .orElseThrow(() -> new RuntimeException("Semester not found"));
+
+        if (request.isCurrent() && !semester.isCurrent()) {
+            semesterRepository.findByIsCurrentTrue().ifPresent(activeSemester -> {
+                activeSemester.setCurrent(false);
+                semesterRepository.save(activeSemester);
+            });
+        }
+
+        semester.setSemYear(request.semYear());
+        semester.setSemField(request.semField());
+        semester.setCurrent(request.isCurrent());
+
+        return semesterRepository.save(semester);
+    }
+
+    @Transactional
+    public void deleteSemester(UUID semesterId) {
+        Semester semester = semesterRepository.findById(semesterId)
+                .orElseThrow(() -> new RuntimeException("Semester not found"));
+
+        if (sectionRepository.existsBySemester_SemID(semesterId)) {
+            throw new RuntimeException("Cannot delete semester: It already has assigned sections.");
+        }
+
+        if (studentSemesterRepository.existsBySemester_SemID(semesterId)) {
+            throw new RuntimeException("Cannot delete semester: There are students enrolled in this semester.");
+        }
+
+        semesterRepository.delete(semester);
     }
 }

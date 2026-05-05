@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.CreateAccountRequest;
 import pl.polsl.projectmanagement.dto.CreateSemesterRequest;
 import pl.polsl.projectmanagement.dto.EditAccountRequest;
+import pl.polsl.projectmanagement.dto.UpdateSemesterRequest;
 import pl.polsl.projectmanagement.model.Semester;
 import pl.polsl.projectmanagement.model.Student;
 import pl.polsl.projectmanagement.model.Teacher;
@@ -103,5 +104,19 @@ public class AdminController {
     @GetMapping("/semesters")
     public ResponseEntity<List<Semester>> getAllSemesters() {
         return ResponseEntity.ok(adminService.getAllSemesters());
+    }
+
+    @PutMapping("/semesters/{id}")
+    public ResponseEntity<Semester> updateSemester(
+            @PathVariable UUID id,
+            @RequestBody @Valid UpdateSemesterRequest request) {
+
+        return ResponseEntity.ok(adminService.updateSemester(id, request));
+    }
+
+    @DeleteMapping("/semesters/{id}")
+    public ResponseEntity<Void> deleteSemester(@PathVariable UUID id) {
+        adminService.deleteSemester(id);
+        return ResponseEntity.noContent().build();
     }
 }
