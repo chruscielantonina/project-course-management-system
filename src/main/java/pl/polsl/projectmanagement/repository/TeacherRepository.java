@@ -9,6 +9,6 @@ import java.util.UUID;
 
 // automatic methods like findAll(), findById(), save(), delete()
 public interface TeacherRepository extends JpaRepository<Teacher, UUID> {
-    Optional<Teacher> findByTEmail(String email);
+    Optional<Teacher> findByAppUser_Email(String email);
     Optional<Teacher> findByAppUser_Id(UUID appUserId);
 }

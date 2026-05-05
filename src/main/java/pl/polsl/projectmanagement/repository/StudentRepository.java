@@ -10,7 +10,7 @@ import java.util.UUID;
 
 // automatic methods like findAll(), findById(), save(), delete()
 public interface StudentRepository extends JpaRepository<Student, UUID> {
-    Optional<Student> findBySEmail(String email);
+    Optional<Student> findByAppUser_Email(String email);
 
     @Query("SELECT s FROM Student s WHERE s.sID NOT IN (SELECT ss.student.sID FROM StudentSection ss)")
     List<Student> findAvailableStudents();

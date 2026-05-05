@@ -49,14 +49,12 @@ public class AdminService {
                 Student student = new Student();
                 student.setSFirstName(firstName);
                 student.setSLastName(lastName);
-                student.setSEmail(email);
                 student.setAppUser(appUser);
                 studentRepository.save(student);
             } else if (accountType == AccountType.TEACHER) {
                 Teacher teacher = new Teacher();
                 teacher.setTFirstName(firstName);
                 teacher.setTLastName(lastName);
-                teacher.setTEmail(email);
                 teacher.setAppUser(appUser);
                 teacherRepository.save(teacher);
             }
@@ -86,7 +84,9 @@ public class AdminService {
         return studentRepository.findById(sId).map(student -> {
             student.setSFirstName(firstName);
             student.setSLastName(lastName);
-            student.setSEmail(email);
+            if (student.getAppUser() != null) {
+                student.getAppUser().setEmail(email);
+            }
             studentRepository.save(student);
             return true;
         }).orElse(false);
@@ -96,7 +96,9 @@ public class AdminService {
         return teacherRepository.findById(tId).map(teacher -> {
             teacher.setTFirstName(firstName);
             teacher.setTLastName(lastName);
-            teacher.setTEmail(email);
+            if (teacher.getAppUser() != null) {
+                teacher.getAppUser().setEmail(email);
+            }
             teacherRepository.save(teacher);
             return true;
         }).orElse(false);
