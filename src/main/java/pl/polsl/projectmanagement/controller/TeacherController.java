@@ -2,8 +2,10 @@ package pl.polsl.projectmanagement.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.polsl.projectmanagement.dto.*;
+import pl.polsl.projectmanagement.security.UserDetailsImpl;
 import pl.polsl.projectmanagement.service.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -40,30 +42,38 @@ public class TeacherController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/api/teachers/{teacherId}/sections")
-    public ResponseEntity<List<SectionDashboardResponse>> getDashboardSections(@PathVariable UUID teacherId) {
+    @GetMapping("/api/teachers/me/sections")
+    public ResponseEntity<List<SectionDashboardResponse>> getDashboardSections(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        UUID teacherId = userDetails.getId();
         List<SectionDashboardResponse> response = sectionService.getSectionsForDashboard(teacherId);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/api/teachers/{teacherId}/sections")
-    public ResponseEntity<SectionResponse> addSection(@PathVariable UUID teacherId, @RequestBody CreateSectionRequest request) {
+    @PostMapping("/api/teachers/me/sections")
+    public ResponseEntity<SectionResponse> addSection(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestBody CreateSectionRequest request) {
+        UUID teacherId = userDetails.getId();
         SectionResponse response = sectionService.addSection(teacherId, request);
         return ResponseEntity.status(201).body(response);
     }
 
-    @DeleteMapping("/api/teachers/{teacherId}/sections/{sectionId}")
-    public ResponseEntity<Void> deleteSection(@PathVariable UUID sectionId, @PathVariable UUID teacherId) {
+    @DeleteMapping("/api/teachers/me/sections/{sectionId}")
+    public ResponseEntity<Void> deleteSection(
+            @PathVariable UUID sectionId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        UUID teacherId = userDetails.getId();
         sectionService.deleteSection(sectionId, teacherId);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/api/teachers/{teacherId}/sections/{sectionId}/students")
+    @PostMapping("/api/teachers/me/sections/{sectionId}/students")
     public ResponseEntity<Void> assignStudents(
             @PathVariable UUID sectionId,
-            @PathVariable UUID teacherId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestBody AssignStudentsRequest request) {
 
+        UUID teacherId = userDetails.getId();
         sectionService.assignStudentsToSection(sectionId, teacherId, request);
         return ResponseEntity.status(201).build();
     }

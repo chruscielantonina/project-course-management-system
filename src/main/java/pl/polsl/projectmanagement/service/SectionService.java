@@ -22,9 +22,8 @@ public class SectionService {
     private final StudentSectionRepository studentSectionRepository;
 
     @Transactional
-    public SectionResponse addSection(UUID teacherId, CreateSectionRequest request) {
-        Teacher teacher = teacherRepository.findById(teacherId)
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+    public SectionResponse addSection(UUID appUserId, CreateSectionRequest request) {
+        Teacher teacher = getTeacherByAppUserId(appUserId);
         Topic topic = topicRepository.findById(request.topicId())
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
 
@@ -51,8 +50,9 @@ public class SectionService {
     }
 
     @Transactional(readOnly = true)
-    public List<SectionDashboardResponse> getSectionsForDashboard(UUID currentUserId) {
-        List<Section> sections = sectionRepository.findAllByTeacherIdWithDetails(currentUserId);
+    public List<SectionDashboardResponse> getSectionsForDashboard(UUID appUserId) {
+        Teacher teacher = getTeacherByAppUserId(appUserId);
+        List<Section> sections = sectionRepository.findAllByTeacherIdWithDetails(teacher.getTID());
 
         return sections.stream().map(section -> {
             List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
@@ -75,21 +75,25 @@ public class SectionService {
     }
 
     @Transactional
-    public void deleteSection(UUID sectionId, UUID currentUserId) {
+    public void deleteSection(UUID sectionId, UUID appUserId) {
         Section section = sectionRepository.findById(sectionId).orElseThrow(() -> new RuntimeException("Section not found"));
 
-        if (!section.getTeacher().getTID().equals(currentUserId)) {
+        Teacher currentTeacher = getTeacherByAppUserId(appUserId);
+
+        if (!section.getTeacher().getTID().equals(currentTeacher.getTID())) {
             throw new RuntimeException("You do not have permission to delete this section");
         }
         sectionRepository.delete(section);
     }
 
     @Transactional
-    public void assignStudentsToSection(UUID sectionId, UUID currentUserId, AssignStudentsRequest request) {
+    public void assignStudentsToSection(UUID sectionId, UUID appUserId, AssignStudentsRequest request) {
         Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new RuntimeException("Section not found"));
 
-        if (!section.getTeacher().getTID().equals(currentUserId)) {
+        Teacher currentTeacher = getTeacherByAppUserId(appUserId);
+
+        if (!section.getTeacher().getTID().equals(currentTeacher.getTID())) {
             throw new RuntimeException("You do not have permission to manage this section");
         }
 
@@ -126,5 +130,10 @@ public class SectionService {
                         s.getSID(),
                         s.getSFirstName() + " " + s.getSLastName()
                 )).toList();
+    }
+
+    private Teacher getTeacherByAppUserId(UUID appUserId) {
+        return teacherRepository.findByAppUser_Id(appUserId)
+                .orElseThrow(() -> new RuntimeException("Teacher profile not found for current user"));
     }
 }
