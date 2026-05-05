@@ -15,7 +15,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
 public class AdminController {
 
     private final AdminService adminService;
@@ -36,6 +35,7 @@ public class AdminController {
                 request.getFirstName(),
                 request.getLastName(),
                 request.getEmail(),
+                request.getPassword(),
                 request.getAccountType()
         );
 

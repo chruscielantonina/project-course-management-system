@@ -18,6 +18,9 @@ public class CreateAccountRequest {
     @NotBlank(message = "Email is required")
     private String email;
 
+    @NotBlank(message = "Password is required")
+    private String password;
+
     @NotNull(message = "Account type is required")
     private AccountType accountType;
 }

@@ -1,10 +1,14 @@
 package pl.polsl.projectmanagement.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.polsl.projectmanagement.model.AccountType;
+import pl.polsl.projectmanagement.model.AppUser;
 import pl.polsl.projectmanagement.model.Student;
 import pl.polsl.projectmanagement.model.Teacher;
+import pl.polsl.projectmanagement.repository.AppUserRepository;
 import pl.polsl.projectmanagement.repository.StudentRepository;
 import pl.polsl.projectmanagement.repository.TeacherRepository;
 
@@ -17,6 +21,8 @@ public class AdminService {
 
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
+    private final AppUserRepository appUserRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
@@ -26,19 +32,32 @@ public class AdminService {
         return teacherRepository.findAll();
     }
 
-    public boolean createAccount(String firstName, String lastName, String email, AccountType accountType) {
+    @Transactional
+    public boolean createAccount(String firstName, String lastName, String email, String password, AccountType accountType) {
         try {
+
+            if(appUserRepository.existsByEmail(email)) {
+                return false;
+            }
+
+            AppUser appUser = new AppUser();
+            appUser.setEmail(email);
+            appUser.setPassword(passwordEncoder.encode(password));
+            appUser.setAccountType(accountType);
+
             if (accountType == AccountType.STUDENT) {
                 Student student = new Student();
                 student.setSFirstName(firstName);
                 student.setSLastName(lastName);
                 student.setSEmail(email);
+                student.setAppUser(appUser);
                 studentRepository.save(student);
             } else if (accountType == AccountType.TEACHER) {
                 Teacher teacher = new Teacher();
                 teacher.setTFirstName(firstName);
                 teacher.setTLastName(lastName);
                 teacher.setTEmail(email);
+                teacher.setAppUser(appUser);
                 teacherRepository.save(teacher);
             }
             return true;
