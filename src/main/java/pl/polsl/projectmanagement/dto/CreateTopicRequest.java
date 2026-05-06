@@ -18,7 +18,4 @@ public class CreateTopicRequest {
     private String description;
 
     private boolean isActive;
-
-    @NotNull(message = "Teacher ID is required.")
-    private UUID teacherId;
 }
