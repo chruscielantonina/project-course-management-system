@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record SectionResponse(
         UUID sectionId,
-        String result,
+        String projectFileName,
         SectionStatus status,
         int maxCapacity,
         UUID topicId,

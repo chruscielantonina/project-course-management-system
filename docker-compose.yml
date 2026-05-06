@@ -8,6 +8,8 @@ services:
       POSTGRES_PASSWORD: dra3pass
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   backend:
     build: .
@@ -21,6 +23,8 @@ services:
       SPRING_DATASOURCE_USERNAME: dra3user
       SPRING_DATASOURCE_PASSWORD: dra3pass
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    volumes:
+      - ./project_uploads:/app/uploads
 
   #  frontend:
   #    build: ../frontend
@@ -29,3 +33,6 @@ services:
   #      - "3000:3000"
   #    depends_on:
   #      - backend
+
+volumes:
+  postgres_data:

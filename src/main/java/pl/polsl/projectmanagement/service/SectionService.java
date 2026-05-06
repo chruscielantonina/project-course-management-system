@@ -41,7 +41,7 @@ public class SectionService {
 
         return new SectionResponse(
                 savedSection.getSeID(),
-                savedSection.getSeResult(),
+                savedSection.getProjectFileName(),
                 savedSection.getSeState(),
                 savedSection.getMaxCapacity(),
                 savedSection.getTopic().getToID(),

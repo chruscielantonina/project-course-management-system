@@ -17,7 +17,10 @@ public class Section {
     private UUID seID;
 
     @Column
-    private String seResult;
+    private String projectFileName;
+
+    @Column
+    private String projectFilePath;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
