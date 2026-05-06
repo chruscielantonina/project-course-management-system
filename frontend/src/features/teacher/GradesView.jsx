@@ -6,17 +6,13 @@ const GradesView = () => {
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedSection, setSelectedSection] = useState('');
 
-    // Stan przechowujący aktualnie wyświetlanych studentów i ich oceny
     const [students, setStudents] = useState([]);
 
-    // Symulacja struktury uczelnianej
     const academicYears = ['2025/2026', '2024/2025'];
     const currentAcademicYear = '2025/2026'; // Bieżący rok = edycja dozwolona
 
-    // Dostępne oceny w systemie polskim
     const availableGrades = [2.0, 3.0, 3.5, 4.0, 4.5, 5.0];
 
-    // Efekt przeładowujący dane w zależności od wybranego roku
     useEffect(() => {
         if (selectedYear === '2025/2026') {
             setStudents(currentGradesData);
@@ -27,7 +23,6 @@ const GradesView = () => {
         }
     }, [selectedYear, selectedSection]);
 
-    // Funkcja do aktualizacji oceny w lokalnym stanie (tylko dla bieżącego roku)
     const handleGradeChange = (studentId, newGrade) => {
         setStudents(prevStudents =>
             prevStudents.map(student =>
@@ -41,14 +36,12 @@ const GradesView = () => {
         console.log('Nowe oceny:', students);
     };
 
-    // Sprawdzamy, czy użytkownik może edytować oceny
     const isEditable = selectedYear === currentAcademicYear;
 
     return (
         <div>
             <h2 style={{ marginBottom: '20px' }}>Oceny Projektowe</h2>
 
-            {/* Panel filtrów */}
             <div style={{ display: 'flex', gap: '20px', backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <label style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2d3436' }}>Rok Akademicki:</label>
@@ -83,7 +76,6 @@ const GradesView = () => {
                 </div>
             </div>
 
-            {/* Tabela ocen */}
             {selectedYear && selectedSection ? (
                 <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
 

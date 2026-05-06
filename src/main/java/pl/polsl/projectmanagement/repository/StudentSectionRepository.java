@@ -17,4 +17,6 @@ public interface StudentSectionRepository extends JpaRepository<StudentSection, 
 
     @Query("SELECT ss FROM StudentSection ss WHERE ss.student.sID = :sId")
     List<StudentSection> findAllByStudentId(@Param("sId") UUID sId);
+
+    boolean existsByStudent_sIDAndSection_seID(UUID studentId, UUID sectionId);
 }

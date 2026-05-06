@@ -12,6 +12,8 @@ import java.util.UUID;
 public interface StudentRepository extends JpaRepository<Student, UUID> {
     Optional<Student> findByAppUser_Email(String email);
 
+    Optional<Student> findByAppUser_Id(UUID appUserId);
+
     @Query("SELECT s FROM Student s WHERE s.sID NOT IN (SELECT ss.student.sID FROM StudentSection ss)")
     List<Student> findAvailableStudents();
 }

@@ -5,11 +5,10 @@ const TeacherDashboard = () => {
     const [topics, setTopics] = useState([]);
     const [error, setError] = useState(null);
 
-    // useEffect wywoła się automatycznie po załadowaniu komponentu
     useEffect(() => {
         const fetchTopics = async () => {
             try {
-                // Zapytanie trafia pod http://localhost:8080/api/topics
+
                 const response = await axiosInstance.get('/api/topics');
                 setTopics(response.data);
             } catch (err) {

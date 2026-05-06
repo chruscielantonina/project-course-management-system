@@ -2,11 +2,14 @@ package pl.polsl.projectmanagement.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import pl.polsl.projectmanagement.dto.ChangeSectionRequest;
-import pl.polsl.projectmanagement.dto.StudentBasicResponse;
 import pl.polsl.projectmanagement.model.Attendance;
 import pl.polsl.projectmanagement.model.Grade;
+import pl.polsl.projectmanagement.security.UserDetailsImpl;
+import pl.polsl.projectmanagement.service.SectionService;
 import pl.polsl.projectmanagement.service.StudentService;
 
 import java.util.List;
@@ -15,7 +18,9 @@ import java.util.UUID;
 @RequestMapping("/api/students")
 @RequiredArgsConstructor
 public class StudentController {
+
     private final StudentService studentService;
+    private final SectionService sectionService;
 
     @PostMapping("/{studentId}/sections/{sectionId}")
     public ResponseEntity<String> signUpForSection(@PathVariable UUID studentId, @PathVariable UUID sectionId) {
@@ -71,5 +76,16 @@ public class StudentController {
 
         List<Grade> grades = studentService.reviewGradesForSection(studentId, sectionId);
         return ResponseEntity.ok(grades);
+    }
+
+    @PostMapping(value = "/me/sections/{sectionId}/project", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadProject(
+            @PathVariable UUID sectionId,
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        sectionService.uploadSectionProject(sectionId, userDetails.getId(), file);
+
+        return ResponseEntity.ok("Project ZIP file uploaded successfully!");
     }
 }

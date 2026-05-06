@@ -1,26 +1,22 @@
 import { useState } from 'react';
-import studentsData from './studenci.json'; // Importujemy Twoich studentów
+import studentsData from './studenci.json';
 
 const AttendanceView = () => {
     const [selectedSection, setSelectedSection] = useState('');
     const [selectedDate, setSelectedDate] = useState('');
 
-    // Stan przechowujący obecności w formie obiektu: { "S001": true, "S002": false, ... }
     const [attendance, setAttendance] = useState({});
 
-    // Symulujemy przypisanie studentów z Twojego JSONa do konkretnych sekcji
     const sections = [
         { id: 'SEC_A', name: 'Sekcja A (Poniedziałek 10:00)', studentIds: ['S001', 'S002', 'S003', 'S004', 'S005', 'S006'] },
         { id: 'SEC_B', name: 'Sekcja B (Wtorek 12:00)', studentIds: ['S007', 'S008', 'S009', 'S010', 'S011', 'S012'] }
     ];
 
-    // Pobieramy studentów tylko dla wybranej sekcji
     const currentSection = sections.find(sec => sec.id === selectedSection);
     const sectionStudents = currentSection
         ? studentsData.filter(student => currentSection.studentIds.includes(student.id))
         : [];
 
-    // Funkcja do aktualizowania statusu obecności dla konkretnego studenta
     const handleAttendanceChange = (studentId, isPresent) => {
         setAttendance(prev => ({
             ...prev,
@@ -28,7 +24,6 @@ const AttendanceView = () => {
         }));
     };
 
-    // Symulacja zapisu do bazy
     const handleSave = () => {
         console.log("Zapisuję obecność dla daty:", selectedDate);
         console.log("Stan obecności:", attendance);
@@ -39,7 +34,6 @@ const AttendanceView = () => {
         <div>
             <h2 style={{ marginBottom: '20px' }}>Lista Obecności</h2>
 
-            {/* Panel filtrów: Wybór sekcji i daty */}
             <div style={{ display: 'flex', gap: '20px', backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <label style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2d3436' }}>Wybierz sekcję:</label>
@@ -66,7 +60,6 @@ const AttendanceView = () => {
                 </div>
             </div>
 
-            {/* Wyświetlanie listy studentów TYLKO jeśli wybrano sekcję i datę */}
             {selectedSection && selectedDate ? (
                 <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>

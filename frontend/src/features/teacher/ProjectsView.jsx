@@ -9,7 +9,7 @@ const ProjectsView = () => {
 
     const academicYears = ['2025/2026', '2024/2025'];
 
-    // Przykładowe dane o wersjach projektów dla studentów
+
     const mockVersions = {
         "S001": [
             { id: 1, data: '2025-05-10 14:30', komentarz: 'Naprawiono błąd z logowaniem', plik: 'projekt_v2.zip' },
@@ -22,7 +22,6 @@ const ProjectsView = () => {
 
     useEffect(() => {
         if (selectedYear && selectedSection) {
-            // Dodajemy pole "Ostatnia aktywność" do danych studentów
             const studentsWithActivity = studentsData.map(s => ({
                 ...s,
                 ostatniaAktywnosc: mockVersions[s.id] ? mockVersions[s.id][0].data : 'Brak nadesłanych wersji'
@@ -42,7 +41,6 @@ const ProjectsView = () => {
         <div>
             <h2 style={{ marginBottom: '20px' }}> Realizowane Projekty i Wersje</h2>
 
-            {/* Panel filtrów */}
             <div style={{ display: 'flex', gap: '20px', backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <label style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2d3436' }}>Rok Akademicki:</label>
@@ -73,7 +71,6 @@ const ProjectsView = () => {
                 </div>
             </div>
 
-            {/* Tabela Studentów */}
             {selectedYear && selectedSection ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
@@ -114,7 +111,6 @@ const ProjectsView = () => {
                         </table>
                     </div>
 
-                    {/* Szczegóły nadesłanych wersji (pojawia się po kliknięciu studenta) */}
                     {selectedStudent && (
                         <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', borderLeft: '5px solid #0984e3' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>

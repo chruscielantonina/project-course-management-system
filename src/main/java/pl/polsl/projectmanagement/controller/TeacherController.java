@@ -26,8 +26,11 @@ public class TeacherController {
     }
 
     @PostMapping("/api/topics")
-    public ResponseEntity<TopicResponse> addTopic(@RequestBody CreateTopicRequest request) {
-        TopicResponse response = topicService.addTopic(request);
+    public ResponseEntity<TopicResponse> addTopic(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestBody CreateTopicRequest request) {
+        UUID teacherId = userDetails.getId();
+        TopicResponse response = topicService.addTopic(teacherId, request);
         return ResponseEntity.status(201).body(response);
     }
 

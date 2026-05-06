@@ -28,9 +28,9 @@ public class TopicService {
     }
 
     @Transactional
-    public TopicResponse addTopic(CreateTopicRequest requestDto) {
+    public TopicResponse addTopic(UUID teacherId, CreateTopicRequest requestDto) {
 
-        Teacher teacher = teacherRepository.findById(requestDto.getTeacherId())
+        Teacher teacher = teacherRepository.findByAppUser_Id(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
         Topic topic = new Topic();

@@ -76,7 +76,6 @@ const SectionsView = () => {
                 Zalogowany jako: <strong>{currentUser}</strong>
             </p>
 
-            {/* Siatka kart (Grid) */}
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
@@ -92,7 +91,6 @@ const SectionsView = () => {
                             boxShadow: '0 4px 6px rgba(0,0,0,0.05)', borderTop: `4px solid ${badgeStyle.text}`,
                             display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
                         }}>
-                            {/* Nagłówek karty */}
                             <div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                                     <h3 style={{ margin: 0, color: '#2d3436' }}>{sec.id}</h3>
@@ -126,7 +124,6 @@ const SectionsView = () => {
                                 </div>
                             </div>
 
-                            {/* Przyciski akcji na dole karty */}
                             <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
                                 {isOwner ? (
                                     <>
@@ -148,7 +145,6 @@ const SectionsView = () => {
                 })}
             </div>
 
-            {/*MODAL TWORZENIA SEKCJI*/}
             {showCreateModal && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
