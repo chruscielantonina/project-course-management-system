@@ -30,7 +30,7 @@ public class TopicService {
     @Transactional
     public TopicResponse addTopic(UUID teacherId, CreateTopicRequest requestDto) {
 
-        Teacher teacher = teacherRepository.findById(teacherId)
+        Teacher teacher = teacherRepository.findByAppUser_Id(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
         Topic topic = new Topic();
