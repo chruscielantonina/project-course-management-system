@@ -9,5 +9,6 @@ public record SectionDashboardResponse(
         String teacherFullName,
         int currentOccupancy,
         int maxCapacity,
+        String projectFileName,
         List<StudentBasicResponse> enrolledStudents
 ) {}

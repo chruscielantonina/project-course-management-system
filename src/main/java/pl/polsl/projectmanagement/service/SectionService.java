@@ -71,6 +71,7 @@ public class SectionService {
                     teacherName,
                     students.size(),
                     section.getMaxCapacity(),
+                    section.getProjectFileName(),
                     students
             );
         }).toList();
