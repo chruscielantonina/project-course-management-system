@@ -3,6 +3,7 @@ package pl.polsl.projectmanagement.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.*;
 import pl.polsl.projectmanagement.repository.*;
@@ -20,6 +21,7 @@ public class SectionService {
     private final SectionRepository sectionRepository;
     private final StudentRepository studentRepository;
     private final StudentSectionRepository studentSectionRepository;
+    private final FileStorageService fileStorageService;
 
     @Transactional
     public SectionResponse addSection(UUID appUserId, CreateSectionRequest request) {
@@ -135,5 +137,27 @@ public class SectionService {
     private Teacher getTeacherByAppUserId(UUID appUserId) {
         return teacherRepository.findByAppUser_Id(appUserId)
                 .orElseThrow(() -> new RuntimeException("Teacher profile not found for current user"));
+    }
+
+    @Transactional
+    public void uploadSectionProject(UUID sectionId, UUID currentAppUserId, MultipartFile file) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new RuntimeException("Section not found"));
+
+        Student currentStudent = studentRepository.findByAppUser_Id(currentAppUserId)
+                .orElseThrow(() -> new RuntimeException("Student profile not found"));
+
+        boolean isStudentInSection = studentSectionRepository
+                .existsByStudent_sIDAndSection_seID(currentStudent.getSID(), sectionId);
+
+        if (!isStudentInSection) {
+            throw new RuntimeException("You are not authorized to upload a project for this section.");
+        }
+
+        String savedFileName = fileStorageService.storeProjectFile(sectionId, file);
+
+        section.setProjectFileName(savedFileName);
+        section.setProjectFilePath("/uploads/" + savedFileName);
+        sectionRepository.save(section);
     }
 }
