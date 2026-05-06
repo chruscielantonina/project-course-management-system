@@ -5,7 +5,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import pl.polsl.projectmanagement.model.AccountType;
+import pl.polsl.projectmanagement.model.Admin;
 import pl.polsl.projectmanagement.model.AppUser;
+import pl.polsl.projectmanagement.repository.AdminRepository;
 import pl.polsl.projectmanagement.repository.AppUserRepository;
 
 @Component
@@ -14,6 +16,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private final AppUserRepository appUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AdminRepository adminRepository;
 
     @Override
     public void run(String... args) {
@@ -24,7 +27,11 @@ public class DataInitializer implements CommandLineRunner {
             defaultAdmin.setPassword(passwordEncoder.encode("haslo123"));
             defaultAdmin.setAccountType(AccountType.ADMIN);
 
-            appUserRepository.save(defaultAdmin);
+            AppUser savedAuth = appUserRepository.save(defaultAdmin);
+
+            Admin adminProfile = new Admin();
+            adminProfile.setAppUser(savedAuth);
+            adminRepository.save(adminProfile);
         }
     }
 }
