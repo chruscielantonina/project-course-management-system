@@ -27,10 +27,8 @@ public class DataInitializer implements CommandLineRunner {
             defaultAdmin.setPassword(passwordEncoder.encode("haslo123"));
             defaultAdmin.setAccountType(AccountType.ADMIN);
 
-            AppUser savedAuth = appUserRepository.save(defaultAdmin);
-
             Admin adminProfile = new Admin();
-            adminProfile.setAppUser(savedAuth);
+            adminProfile.setAppUser(defaultAdmin);
             adminRepository.save(adminProfile);
         }
     }
