@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import sectionsData from './sekcje.json';
 
+const sectionsData = [];
 const SectionsView = () => {
     const [sections, setSections] = useState(sectionsData);
     const currentUser = "dr inż. Jan Kowalski";

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import currentGradesData from './oceny.json'; // Bieżące oceny
-import archivalGradesData from './oceny_archiwalne.json'; // Archiwalne oceny
 
+const currentGradesData = [];
+const archivalGradesData = [];
 const GradesView = () => {
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedSection, setSelectedSection] = useState('');

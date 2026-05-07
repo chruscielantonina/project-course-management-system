@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import studentsData from './oceny.json';
 
+
+const studentsData = [];
 const ProjectsView = () => {
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedSection, setSelectedSection] = useState('');

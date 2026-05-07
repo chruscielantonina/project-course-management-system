@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import studentsData from './studenci.json';
 
+const studentsData = [];
 const AttendanceView = () => {
     const [selectedSection, setSelectedSection] = useState('');
     const [selectedDate, setSelectedDate] = useState('');

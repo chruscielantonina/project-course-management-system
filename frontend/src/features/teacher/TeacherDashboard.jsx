@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axiosInstance from '../../api/axios'; // Importujemy naszego skonfigurowanego klienta
+import axiosInstance from '../../api/axios';
 
 const TeacherDashboard = () => {
     const [topics, setTopics] = useState([]);
@@ -8,7 +8,6 @@ const TeacherDashboard = () => {
     useEffect(() => {
         const fetchTopics = async () => {
             try {
-
                 const response = await axiosInstance.get('/api/topics');
                 setTopics(response.data);
             } catch (err) {
@@ -29,8 +28,9 @@ const TeacherDashboard = () => {
 
             <ul>
                 {topics.map(topic => (
-                    // Dopasuj topic.id i topic.temat do struktury zwracanej przez Spring Boot (np. topic.title)
-                    <li key={topic.id}>{topic.title} - {topic.status}</li>
+                    <li key={topic.id} style={{ marginBottom: '8px' }}>
+                        <strong>{topic.name}</strong> - {topic.active ? 'Aktywny' : 'Nieaktywny'}
+                    </li>
                 ))}
             </ul>
         </div>

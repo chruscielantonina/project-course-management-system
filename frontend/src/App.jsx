@@ -1,44 +1,28 @@
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import LoginView from './features/auth/LoginView';
+import TeacherLayout from './features/teacher/TeacherLayout';
+import TeacherDashboard from './features/teacher/TeacherDashboard';
 import SubjectsView from './features/teacher/SubjectsView';
-// Zaimportuj resztę swoich widoków:
-// import SectionsView from './features/teacher/SectionsView';
-// import AttendanceView from './features/teacher/AttendanceView';
-// import GradesView from './features/teacher/GradesView';
-// import ProjectsView from './features/teacher/ProjectsView';
+import SectionsView from './features/teacher/SectionsView';
+import GradesView from './features/teacher/GradesView';
+import ProjectsView from './features/teacher/ProjectsView';
+import AttendanceView from './features/teacher/AttendanceView';
 
 function App() {
   return (
       <Router>
-        <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif' }}>
-
-          {/* Pasek boczny */}
-          <nav style={{ width: '260px', backgroundColor: '#1e272e', color: 'white', padding: '20px' }}>
-            <h2 style={{ color: '#00d8d6', borderBottom: '1px solid #485460', paddingBottom: '20px', marginBottom: '20px' }}>
-              Panel Prowadzącego
-            </h2>
-            <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <li><Link to="/teacher/tematy" style={{ color: '#d2dae2', textDecoration: 'none' }}>Tematy Projektów</Link></li>
-              <li><Link to="/teacher/sekcje" style={{ color: '#d2dae2', textDecoration: 'none' }}>Sekcje projektowe</Link></li>
-              <li><Link to="/teacher/obecnosc" style={{ color: '#d2dae2', textDecoration: 'none' }}>Obecność</Link></li>
-              <li><Link to="/teacher/oceny" style={{ color: '#d2dae2', textDecoration: 'none' }}>Oceny</Link></li>
-              <li><Link to="/teacher/projekty" style={{ color: '#d2dae2', textDecoration: 'none' }}>Projekty</Link></li>
-            </ul>
-          </nav>
-
-          {/* Dynamiczna treść */}
-          <main style={{ flex: 1, padding: '40px', backgroundColor: '#f1f2f6', color: '#2f3640' }}>
-            <Routes>
-              {/* Odpowiada ścieżkom z Link to="..." */}
-              <Route path="/teacher/tematy" element={<SubjectsView />} />
-              {/* <Route path="/teacher/sekcje" element={<SectionsView />} /> */}
-              {/* <Route path="/teacher/obecnosc" element={<AttendanceView />} /> */}
-              {/* <Route path="/teacher/oceny" element={<GradesView />} /> */}
-              {/* <Route path="/teacher/projekty" element={<ProjectsView />} /> */}
-
-              <Route path="*" element={<Navigate to="/teacher/tematy" replace />} />
-            </Routes>
-          </main>
-        </div>
+        <Routes>
+          <Route path="/" element={<LoginView />} />
+          <Route element={<TeacherLayout />}>
+            <Route path="/dashboard" element={<TeacherDashboard />} />
+            <Route path="/tematy" element={<SubjectsView />} />
+            <Route path="/sekcje" element={<SectionsView />} />
+            <Route path="/oceny" element={<GradesView />} />
+            <Route path="/obecnosc" element={<AttendanceView />} />
+            <Route path="/projekty" element={<ProjectsView />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
       </Router>
   );
 }
