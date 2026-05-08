@@ -4,9 +4,7 @@ import TeacherLayout from './features/teacher/TeacherLayout';
 import TeacherDashboard from './features/teacher/TeacherDashboard';
 import SubjectsView from './features/teacher/SubjectsView';
 import SectionsView from './features/teacher/SectionsView';
-import GradesView from './features/teacher/GradesView';
 import ProjectsView from './features/teacher/ProjectsView';
-import AttendanceView from './features/teacher/AttendanceView';
 import AdminLayout from './features/admin/AdminLayout';
 import AdminDashboard from './features/admin/AdminDashboard';
 
@@ -19,8 +17,6 @@ function App() {
             <Route path="/dashboard" element={<TeacherDashboard />} />
             <Route path="/tematy" element={<SubjectsView />} />
             <Route path="/sekcje" element={<SectionsView />} />
-            <Route path="/oceny" element={<GradesView />} />
-            <Route path="/obecnosc" element={<AttendanceView />} />
             <Route path="/projekty" element={<ProjectsView />} />
           </Route>
           <Route element={<AdminLayout />}>
