@@ -43,8 +43,6 @@ const TeacherLayout = () => {
                     <Link to="/dashboard" style={linkStyle}>Panel Główny</Link>
                     <Link to="/tematy" style={linkStyle}>Tematy Projektów</Link>
                     <Link to="/sekcje" style={linkStyle}>Sekcje Projektowe</Link>
-                    <Link to="/obecnosc" style={linkStyle}>Lista Obecności</Link>
-                    <Link to="/oceny" style={linkStyle}>Oceny Projektowe</Link>
                     <Link to="/projekty" style={linkStyle}>Nadesłane Wersje</Link>
                 </div>
 

@@ -26,7 +26,6 @@ const LoginView = () => {
             localStorage.setItem('token', token);
             localStorage.setItem('userRole', userRole);
 
-            alert("Zalogowano pomyślnie!");
 
             if (userRole.toUpperCase().includes('TEACHER')) {
                 navigate('/dashboard');
