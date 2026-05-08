@@ -25,15 +25,14 @@ const LoginView = () => {
 
             localStorage.setItem('token', token);
             localStorage.setItem('userRole', userRole);
-
-            alert("Zalogowano pomyślnie!");
+            localStorage.setItem('email', response.data.email);
 
             if (userRole.toUpperCase().includes('TEACHER')) {
                 navigate('/dashboard');
             } else if (userRole.toUpperCase().includes('STUDENT')) {
                 navigate('/stundetPlaceHolder');  //dodać ścieżke do ekranu studenta!!
             } else if (userRole.toUpperCase().includes('ADMIN')) {
-                navigate('/AdminstundetPlaceHolder');   //dodać ścieżkę do ekranu admina!!
+                navigate('/admin');
             } else {
                 alert(`UWAGA: Nie rozpoznano roli! Otrzymana rola to: ${userRole}`);
                 navigate('/dashboard');

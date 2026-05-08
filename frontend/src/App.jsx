@@ -7,6 +7,8 @@ import SectionsView from './features/teacher/SectionsView';
 import GradesView from './features/teacher/GradesView';
 import ProjectsView from './features/teacher/ProjectsView';
 import AttendanceView from './features/teacher/AttendanceView';
+import AdminLayout from './features/admin/AdminLayout';
+import AdminDashboard from './features/admin/AdminDashboard';
 
 function App() {
   return (
@@ -20,6 +22,9 @@ function App() {
             <Route path="/oceny" element={<GradesView />} />
             <Route path="/obecnosc" element={<AttendanceView />} />
             <Route path="/projekty" element={<ProjectsView />} />
+          </Route>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<AdminDashboard />} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
