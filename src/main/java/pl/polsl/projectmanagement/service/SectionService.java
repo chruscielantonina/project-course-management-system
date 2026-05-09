@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.*;
 import pl.polsl.projectmanagement.repository.*;
+import org.springframework.core.io.Resource;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,20 +25,40 @@ public class SectionService {
     private final FileStorageService fileStorageService;
 
     @Transactional
+    public SectionResponse getSection(UUID teacherId, UUID sectionId) {
+        Teacher teacher = getTeacherByAppUserId(teacherId);
+        Section section = sectionRepository.findById(sectionId).orElseThrow(() -> new RuntimeException("Section not found"));
+
+        if(!section.getTeacher().getTID().equals(teacher.getTID())) {
+            throw new RuntimeException("You do not have permission to get this section");
+        }
+
+        return new SectionResponse(
+                section.getSeID(),
+                section.getProjectFileName(),
+                section.getSeState(),
+                section.getMaxCapacity(),
+                section.getTopic().getToID(),
+                section.getSemester().getSemID()
+        );
+    }
+
+    @Transactional
     public SectionResponse addSection(UUID appUserId, CreateSectionRequest request) {
         Teacher teacher = getTeacherByAppUserId(appUserId);
         Topic topic = topicRepository.findById(request.topicId())
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
 
-        Semester semester = semesterRepository.findById(request.semesterId())
+        Semester semester = semesterRepository.findByIsCurrentTrue()
                 .orElseThrow(() -> new RuntimeException("Semester not found"));
 
         Section section = new Section();
         section.setTeacher(teacher);
         section.setTopic(topic);
+        section.setSeState(request.sectionStatus());
         section.setSemester(semester);
         section.setMaxCapacity(request.maxCapacity());
-        section.setSeState(SectionStatus.CLOSED);
+        section.setSeState(request.sectionStatus());
 
         Section savedSection = sectionRepository.save(section);
 
@@ -48,6 +69,36 @@ public class SectionService {
                 savedSection.getMaxCapacity(),
                 savedSection.getTopic().getToID(),
                 savedSection.getSemester().getSemID()
+        );
+    }
+
+    @Transactional
+    public SectionResponse updateSection(UUID teacherId, UUID sectionId, CreateSectionRequest request) {
+        Teacher teacher = getTeacherByAppUserId(teacherId);
+        Section section = sectionRepository.findById(sectionId).orElseThrow(() -> new RuntimeException("Section not found."));
+        Topic topic = topicRepository.findById(request.topicId()).orElseThrow(() -> new RuntimeException("Topic not found."));
+
+        if (!section.getTeacher().getTID().equals(teacher.getTID())) {
+           throw new RuntimeException("You do not have permission to update this section");
+        }
+
+        int currentStudentCount = section.getEnrolledStudents() != null ? section.getEnrolledStudents().size() : 0;
+        if(request.maxCapacity() < currentStudentCount) {
+            throw new RuntimeException("Cannot lower max capacity below current number of enrolled students (" + currentStudentCount + ").");
+        }
+
+        section.setTopic(topic);
+        section.setSeState(request.sectionStatus());
+        section.setMaxCapacity(request.maxCapacity());
+        sectionRepository.save(section);
+
+        return new SectionResponse(
+                section.getSeID(),
+                section.getProjectFileName(),
+                section.getSeState(),
+                section.getMaxCapacity(),
+                section.getTopic().getToID(),
+                section.getSemester().getSemID()
         );
     }
 
@@ -159,6 +210,34 @@ public class SectionService {
 
         section.setProjectFileName(savedFileName);
         section.setProjectFilePath("/uploads/" + savedFileName);
+        sectionRepository.save(section);
+    }
+
+    @Transactional(readOnly = true)
+    public Resource downloadSectionProject(UUID sectionId) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new RuntimeException("Section not found"));
+
+        if (section.getProjectFileName() == null) {
+            throw new RuntimeException("No project file uploaded for this section.");
+        }
+
+        return fileStorageService.loadFileAsResource(section.getProjectFileName());
+    }
+
+    @Transactional
+    public void deleteSectionProject(UUID sectionId, UUID appUserId) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new RuntimeException("Section not found"));
+
+        if (section.getProjectFileName() == null) {
+            throw new RuntimeException("No project file to delete.");
+        }
+
+        fileStorageService.deleteFile(section.getProjectFileName());
+
+        section.setProjectFileName(null);
+        section.setProjectFilePath(null);
         sectionRepository.save(section);
     }
 }

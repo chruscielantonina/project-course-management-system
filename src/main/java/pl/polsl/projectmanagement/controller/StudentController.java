@@ -11,6 +11,9 @@ import pl.polsl.projectmanagement.model.Grade;
 import pl.polsl.projectmanagement.security.UserDetailsImpl;
 import pl.polsl.projectmanagement.service.SectionService;
 import pl.polsl.projectmanagement.service.StudentService;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.util.List;
 import java.util.UUID;
@@ -87,5 +90,29 @@ public class StudentController {
         sectionService.uploadSectionProject(sectionId, userDetails.getId(), file);
 
         return ResponseEntity.ok("Project ZIP file uploaded successfully!");
+    }
+
+    @GetMapping("/sections/{sectionId}/project/download")
+    public ResponseEntity<Resource> downloadProject(@PathVariable UUID sectionId) {
+
+        Resource resource = sectionService.downloadSectionProject(sectionId);
+
+        String fileName = resource.getFilename();
+        String prefixToRemove = "section_" + sectionId.toString() + "_";
+        String cleanFileName = fileName.replace(prefixToRemove, "");
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + cleanFileName + "\"")
+                .body(resource);
+    }
+
+    @DeleteMapping("/sections/{sectionId}/project")
+    public ResponseEntity<String> deleteProject(
+            @PathVariable UUID sectionId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        sectionService.deleteSectionProject(sectionId, userDetails.getId());
+        return ResponseEntity.ok("Project file has been successfully deleted.");
     }
 }
