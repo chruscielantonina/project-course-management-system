@@ -7,6 +7,7 @@ import SectionsView from './features/teacher/SectionsView';
 import ProjectsView from './features/teacher/ProjectsView';
 import AdminLayout from './features/admin/AdminLayout';
 import AdminDashboard from './features/admin/AdminDashboard';
+import SemestersView from './features/admin/SemestersView';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           </Route>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/semestry" element={<SemestersView />} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
