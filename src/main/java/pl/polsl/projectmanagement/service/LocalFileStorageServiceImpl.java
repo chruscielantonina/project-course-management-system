@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import java.net.MalformedURLException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,6 +46,31 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
             return targetFileName;
         } catch (IOException ex) {
             throw new RuntimeException("Could not store file " + fileName + ". Please try again!", ex);
+        }
+    }
+
+    @Override
+    public Resource loadFileAsResource(String fileName) {
+        try {
+            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (resource.exists()) {
+                return resource;
+            } else {
+                throw new RuntimeException("File not found: " + fileName);
+            }
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException("File not found: " + fileName, ex);
+        }
+    }
+
+    @Override
+    public void deleteFile(String fileName) {
+        try {
+            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            Files.deleteIfExists(filePath);
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not delete file: " + fileName, ex);
         }
     }
 }

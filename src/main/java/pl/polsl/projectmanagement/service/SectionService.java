@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.*;
 import pl.polsl.projectmanagement.repository.*;
+import org.springframework.core.io.Resource;
 
 import java.util.List;
 import java.util.UUID;
@@ -159,6 +160,34 @@ public class SectionService {
 
         section.setProjectFileName(savedFileName);
         section.setProjectFilePath("/uploads/" + savedFileName);
+        sectionRepository.save(section);
+    }
+
+    @Transactional(readOnly = true)
+    public Resource downloadSectionProject(UUID sectionId) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new RuntimeException("Section not found"));
+
+        if (section.getProjectFileName() == null) {
+            throw new RuntimeException("No project file uploaded for this section.");
+        }
+
+        return fileStorageService.loadFileAsResource(section.getProjectFileName());
+    }
+
+    @Transactional
+    public void deleteSectionProject(UUID sectionId, UUID appUserId) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new RuntimeException("Section not found"));
+
+        if (section.getProjectFileName() == null) {
+            throw new RuntimeException("No project file to delete.");
+        }
+
+        fileStorageService.deleteFile(section.getProjectFileName());
+
+        section.setProjectFileName(null);
+        section.setProjectFilePath(null);
         sectionRepository.save(section);
     }
 }
