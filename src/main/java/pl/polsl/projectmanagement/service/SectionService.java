@@ -30,7 +30,7 @@ public class SectionService {
         Topic topic = topicRepository.findById(request.topicId())
                 .orElseThrow(() -> new RuntimeException("Topic not found"));
 
-        Semester semester = semesterRepository.findById(request.semesterId())
+        Semester semester = semesterRepository.findByIsCurrentTrue()
                 .orElseThrow(() -> new RuntimeException("Semester not found"));
 
         Section section = new Section();
