@@ -52,6 +52,16 @@ public class TeacherController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/api/teachers/me/sections/{sectionId}")
+    public ResponseEntity<SectionResponse> getSection(
+            @PathVariable UUID sectionId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        UUID teacherId = userDetails.getId();
+        SectionResponse response = sectionService.getSection(teacherId, sectionId);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/api/teachers/me/sections")
     public ResponseEntity<SectionResponse> addSection(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -59,6 +69,16 @@ public class TeacherController {
         UUID teacherId = userDetails.getId();
         SectionResponse response = sectionService.addSection(teacherId, request);
         return ResponseEntity.status(201).body(response);
+    }
+
+    @PatchMapping("/api/teachers/me/sections/{sectionId}")
+    public ResponseEntity<SectionResponse> updateSection(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable UUID sectionId,
+            @RequestBody CreateSectionRequest request) {
+        UUID teacherId = userDetails.getId();
+        SectionResponse response = sectionService.updateSection(teacherId, sectionId, request);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/api/teachers/me/sections/{sectionId}")
