@@ -4,13 +4,18 @@ import axiosInstance from '../../api/axios';
 const SectionsView = () => {
     const [sections, setSections] = useState([]);
     const [topics, setTopics] = useState([]);
-    const [availableStudents, setAvailableStudents] = useState([]);
+
     const [viewMode, setViewMode] = useState('lista');
     const [activeSection, setActiveSection] = useState(null);
     const [activeTab, setActiveTab] = useState('sklad');
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [newSectionData, setNewSectionData] = useState({ topicId: '', semesterId: '', maxCapacity: 15 });
     const [selectedYear, setSelectedYear] = useState('2025/2026');
+
+    const [newSectionData, setNewSectionData] = useState({ topicId: '', maxCapacity: 15, sectionStatus: 'REGISTERED' });
+    const [editCapacity, setEditCapacity] = useState('');
+    const [editTopicId, setEditTopicId] = useState('');
+    const [editStatus, setEditStatus] = useState(''); // Stan edycji statusu
+
     const [selectedDate, setSelectedDate] = useState('');
     const [attendanceList, setAttendanceList] = useState([]);
     const [gradesData, setGradesData] = useState({ students: [], isEditable: false });
@@ -19,7 +24,6 @@ const SectionsView = () => {
     useEffect(() => {
         fetchSections();
         fetchTopics();
-        fetchAvailableStudents();
     }, []);
 
     const fetchSections = async () => {
@@ -36,13 +40,6 @@ const SectionsView = () => {
         } catch (error) { console.error("Błąd tematów:", error); }
     };
 
-    const fetchAvailableStudents = async () => {
-        try {
-            const response = await axiosInstance.get('/api/students/available');
-            setAvailableStudents(response.data);
-        } catch (error) { console.error("Błąd studentów:", error); }
-    };
-
     useEffect(() => {
         if (viewMode === 'szczegoly' && activeSection) {
             if (activeTab === 'obecnosc' && selectedDate) fetchAttendance();
@@ -50,30 +47,63 @@ const SectionsView = () => {
         }
     }, [activeTab, selectedDate, activeSection]);
 
+    const openSectionDetails = async (section) => {
+        try {
+            const res = await axiosInstance.get(`/api/teachers/me/sections/${section.sectionId}`);
+            setActiveSection(res.data);
+            setEditCapacity(res.data.maxCapacity);
+            setEditStatus(res.data.status || 'REGISTERED'); // Ustawiamy status z bazy
+            setViewMode('szczegoly');
+            setActiveTab('sklad');
+        } catch (error) {
+            setActiveSection(section);
+            setEditCapacity(section.maxCapacity);
+            setEditStatus(section.status || 'REGISTERED');
+            setViewMode('szczegoly');
+            setActiveTab('sklad');
+        }
+    };
+
     const handleCreateSection = async (e) => {
         e.preventDefault();
         try {
             await axiosInstance.post('/api/teachers/me/sections', {
                 topicId: newSectionData.topicId,
-                semesterId: newSectionData.semesterId, // Tu wpisujesz UUID z bazy
-                maxCapacity: parseInt(newSectionData.maxCapacity)
+                maxCapacity: parseInt(newSectionData.maxCapacity),
+                sectionStatus: newSectionData.sectionStatus
             });
             setShowCreateModal(false);
-            setNewSubjectData({ topicId: '', semesterId: '', maxCapacity: 15 });
+            setNewSectionData({ topicId: '', maxCapacity: 15, sectionStatus: 'REGISTERED' });
             fetchSections();
-        } catch (error) { alert("Błąd tworzenia sekcji. Sprawdź czy UUID semestru jest poprawne."); }
+        } catch (error) {
+            console.error("Szczegóły błędu z serwera:", error.response?.data);
+            alert(`Błąd tworzenia sekcji!\nSerwer zwrócił: ${error.response?.data?.message || error.response?.status || "Brak szczegółów"}`);
+        }
     };
 
-    const handleAssignStudent = async (studentId) => {
+    const handleUpdateSection = async () => {
         try {
-            await axiosInstance.post(`/api/teachers/me/sections/${activeSection.sectionId}/students`, {
-                studentIds: [studentId]
-            });
-            fetchAvailableStudents();
-            const res = await axiosInstance.get('/api/teachers/me/sections');
-            setSections(res.data);
-            setActiveSection(res.data.find(s => s.sectionId === activeSection.sectionId));
-        } catch (error) { alert("Błąd przypisywania."); }
+            const payload = {
+                topicId: editTopicId || activeSection.topicId,
+                maxCapacity: parseInt(editCapacity),
+                sectionStatus: editStatus
+            };
+            await axiosInstance.patch(`/api/teachers/me/sections/${activeSection.sectionId}`, payload);
+            alert("Zmiany zapisane!");
+            const res = await axiosInstance.get(`/api/teachers/me/sections/${activeSection.sectionId}`);
+            setActiveSection(res.data);
+            fetchSections();
+        } catch(error) { alert("Błąd edycji."); }
+    };
+
+    const handleDeleteSection = async () => {
+        if(window.confirm("Czy na pewno chcesz CAŁKOWICIE usunąć tę sekcję i wypisać z niej wszystkich studentów?")) {
+            try {
+                await axiosInstance.delete(`/api/teachers/me/sections/${activeSection.sectionId}`);
+                setViewMode('lista');
+                fetchSections();
+            } catch (error) { alert("Błąd usuwania."); }
+        }
     };
 
     const fetchAttendance = async () => {
@@ -87,7 +117,7 @@ const SectionsView = () => {
         try {
             const payload = { date: selectedDate, attendance: attendanceList.map(s => ({ student: s.studentId, status: s.status || "ABSENT" })) };
             await axiosInstance.post(`/api/sections/${activeSection.sectionId}/attendance`, payload);
-            alert('Zapisano obecność!');
+            alert('Obecność zapisana!');
         } catch (error) { alert("Błąd zapisu."); }
     };
 
@@ -102,20 +132,16 @@ const SectionsView = () => {
         try {
             const payload = { grades: gradesData.students.map(s => ({ studentId: s.studentId, grade: s.grade || "" })) };
             await axiosInstance.put(`/api/sections/${activeSection.sectionId}/grades`, payload);
-            alert('Zapisano oceny!');
+            alert('Oceny zapisane!');
         } catch (error) { alert("Błąd zapisu."); }
     };
-
 
     if (viewMode === 'lista') {
         return (
             <div style={{ color: '#2d3436' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <h2 style={{ margin: 0 }}>Twoje Sekcje Projektowe</h2>
-                    <button
-                        onClick={() => setShowCreateModal(true)}
-                        style={{ padding: '10px 20px', backgroundColor: '#0984e3', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
+                    <button onClick={() => setShowCreateModal(true)} style={{ padding: '10px 20px', backgroundColor: '#0984e3', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
                         + Utwórz nową sekcję
                     </button>
                 </div>
@@ -133,7 +159,7 @@ const SectionsView = () => {
                         <div key={sec.sectionId} style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', borderTop: `4px solid ${sec.status === 'CLOSED' ? '#d63031' : '#00b894'}` }}>
                             <h3 style={{ margin: '0 0 10px 0' }}>Sekcja #{index + 1}</h3>
                             <p style={{ fontSize: '14px', color: '#636e72' }}>Zapisanych: <strong>{sec.currentOccupancy} / {sec.maxCapacity}</strong></p>
-                            <button onClick={() => { setActiveSection(sec); setViewMode('szczegoly'); }} style={{ width: '100%', marginTop: '10px', padding: '10px', backgroundColor: '#f1f2f6', color: '#0984e3', border: '1px solid #0984e3', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            <button onClick={() => openSectionDetails(sec)} style={{ width: '100%', marginTop: '10px', padding: '10px', backgroundColor: '#f1f2f6', color: '#0984e3', border: '1px solid #0984e3', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
                                 Zarządzaj Sekcją ➔
                             </button>
                         </div>
@@ -145,19 +171,25 @@ const SectionsView = () => {
                         <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', width: '400px', color: '#2d3436' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
                                 <h3 style={{ margin: 0 }}>Kreator nowej sekcji</h3>
-                                <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#2d3436', fontWeight: 'bold' }}>✕</button>
+                                <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}>✕</button>
                             </div>
                             <form onSubmit={handleCreateSection} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Temat Projektu:</label>
-                                <select required value={newSectionData.topicId} onChange={(e) => setNewSectionData({...newSectionData, topicId: e.target.value})} style={{ padding: '10px' }}>
-                                    <option value="">-- Wybierz temat --</option>
+                                <label style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '-10px' }}>Wybierz Temat Projektu:</label>
+                                <select required value={newSectionData.topicId} onChange={(e) => setNewSectionData({...newSectionData, topicId: e.target.value})} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }}>
+                                    <option value="">-- Lista tematów --</option>
                                     {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                                 </select>
-                                <label style={{ fontWeight: 'bold', fontSize: '14px' }}>ID Semestru (UUID z bazy):</label>
-                                <input type="text" required placeholder="Wklej UUID semestru..." value={newSectionData.semesterId} onChange={(e) => setNewSectionData({...newSectionData, semesterId: e.target.value})} style={{ padding: '10px' }} />
-                                <label style={{ fontWeight: 'bold', fontSize: '14px' }}>Limit osób:</label>
-                                <input type="number" value={newSectionData.maxCapacity} onChange={(e) => setNewSectionData({...newSectionData, maxCapacity: e.target.value})} style={{ padding: '10px' }} />
-                                <button type="submit" style={{ padding: '12px', backgroundColor: '#00b894', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}>Zapisz sekcję</button>
+
+                                <label style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '-10px' }}>Początkowy status:</label>
+                                <select required value={newSectionData.sectionStatus} onChange={(e) => setNewSectionData({...newSectionData, sectionStatus: e.target.value})} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }}>
+                                    <option value="REGISTERED">Otwarta (Rejestracja)</option>
+                                    <option value="CLOSED">Zamknięta</option>
+                                </select>
+
+                                <label style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '-10px' }}>Liczba osób (limit):</label>
+                                <input type="number" min="1" value={newSectionData.maxCapacity} onChange={(e) => setNewSectionData({...newSectionData, maxCapacity: e.target.value})} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }} />
+
+                                <button type="submit" style={{ padding: '12px', marginTop: '10px', backgroundColor: '#00b894', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}>Zapisz sekcję</button>
                             </form>
                         </div>
                     </div>
@@ -169,66 +201,113 @@ const SectionsView = () => {
     return (
         <div style={{ color: '#2d3436' }}>
             <button onClick={() => setViewMode('lista')} style={{ background: 'none', border: 'none', color: '#0984e3', cursor: 'pointer', fontWeight: 'bold', marginBottom: '10px' }}>⬅ Wróć do listy sekcji</button>
-            <h2>Zarządzanie Sekcją #{sections.findIndex(s => s.sectionId === activeSection.sectionId) + 1}</h2>
+            <h2 style={{ marginTop: 0 }}>Zarządzanie Sekcją #{sections.findIndex(s => s.sectionId === activeSection.sectionId) + 1}</h2>
 
             <div style={{ display: 'flex', gap: '15px', borderBottom: '2px solid #dfe6e9', marginBottom: '20px' }}>
-                {['sklad', 'obecnosc', 'oceny'].map(tab => (
-                    <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '10px', border: 'none', background: 'none', borderBottom: activeTab === tab ? '3px solid #0984e3' : 'none', color: activeTab === tab ? '#0984e3' : '#636e72', cursor: 'pointer', fontWeight: 'bold' }}>
-                        {tab.toUpperCase()}
+                {['sklad', 'obecnosc', 'oceny', 'ustawienia'].map(tab => (
+                    <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '10px', border: 'none', background: 'none', borderBottom: activeTab === tab ? '3px solid #0984e3' : 'none', color: activeTab === tab ? '#0984e3' : '#636e72', cursor: 'pointer', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                        {tab}
                     </button>
                 ))}
             </div>
 
             {activeTab === 'sklad' && (
-                <div style={{ display: 'flex', gap: '20px' }}>
-                    <div style={{ flex: 1, backgroundColor: 'white', padding: '15px', borderRadius: '8px' }}>
-                        <h3>Zapisani ({activeSection.currentOccupancy}/{activeSection.maxCapacity})</h3>
-                        {activeSection.enrolledStudents?.map(s => <div key={s.studentId} style={{ padding: '8px', borderBottom: '1px solid #eee' }}>{s.fullName}</div>)}
-                    </div>
-                    <div style={{ flex: 1, backgroundColor: 'white', padding: '15px', borderRadius: '8px' }}>
-                        <h3>Dostępni studenci</h3>
-                        {availableStudents.map(s => (
-                            <div key={s.studentId} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', borderBottom: '1px solid #eee' }}>
-                                {s.fullName} <button onClick={() => handleAssignStudent(s.studentId)} style={{ color: '#0984e3', background: 'none', border: 'none', cursor: 'pointer' }}>+ Dodaj</button>
-                            </div>
-                        ))}
-                    </div>
+                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', maxWidth: '600px' }}>
+                    <h3 style={{ marginTop: 0, color: '#00b894', borderBottom: '2px solid #f1f2f6', paddingBottom: '10px' }}>
+                        Zapisani studenci ({activeSection.currentOccupancy}/{activeSection.maxCapacity})
+                    </h3>
+
+                    {activeSection.enrolledStudents && activeSection.enrolledStudents.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
+                            {activeSection.enrolledStudents.map(s => (
+                                <div key={s.studentId} style={{ display: 'flex', alignItems: 'center', padding: '12px 15px', backgroundColor: '#fdfdfd', border: '1px solid #dfe6e9', borderRadius: '6px' }}>
+                                    <span style={{ fontWeight: '500', fontSize: '15px' }}>👤 {s.fullName}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p style={{ color: '#b2bec3', fontStyle: 'italic', marginTop: '15px' }}>Nikt jeszcze nie zapisał się do tej sekcji.</p>
+                    )}
                 </div>
             )}
 
             {activeTab === 'obecnosc' && (
-                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px' }}>
-                    <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ marginBottom: '20px', padding: '10px' }} />
+                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                    <label style={{ fontWeight: 'bold', marginRight: '10px' }}>Data zajęć:</label>
+                    <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={{ marginBottom: '20px', padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }} />
                     {selectedDate && (
                         <>
                             {attendanceList.map(s => (
-                                <div key={s.studentId} style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
-                                    {s.fullName}
-                                    <label><input type="radio" checked={s.status === 'PRESENT'} onChange={() => handleAttendanceChange(s.studentId, 'PRESENT')} /> Obecny</label>
-                                    <label><input type="radio" checked={s.status === 'ABSENT'} onChange={() => handleAttendanceChange(s.studentId, 'ABSENT')} /> Nieobecny</label>
+                                <div key={s.studentId} style={{ display: 'flex', gap: '20px', marginBottom: '15px', alignItems: 'center', borderBottom: '1px solid #f1f2f6', paddingBottom: '10px' }}>
+                                    <span style={{ minWidth: '150px', fontWeight: '500' }}>{s.fullName}</span>
+                                    <label style={{ cursor: 'pointer' }}><input type="radio" checked={s.status === 'PRESENT'} onChange={() => handleAttendanceChange(s.studentId, 'PRESENT')} /> Obecny</label>
+                                    <label style={{ cursor: 'pointer' }}><input type="radio" checked={s.status === 'ABSENT'} onChange={() => handleAttendanceChange(s.studentId, 'ABSENT')} /> Nieobecny</label>
                                 </div>
                             ))}
-                            <button onClick={handleSaveAttendance} style={{ marginTop: '20px', padding: '10px', backgroundColor: '#00b894', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Zapisz obecność</button>
+                            <button onClick={handleSaveAttendance} style={{ marginTop: '10px', padding: '10px 20px', backgroundColor: '#00b894', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Zapisz obecność</button>
                         </>
                     )}
                 </div>
             )}
 
             {activeTab === 'oceny' && (
-                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px' }}>
+                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
                     {gradesData.students.map(s => (
-                        <div key={s.studentId} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                            {s.fullName}
+                        <div key={s.studentId} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', borderBottom: '1px solid #f1f2f6', paddingBottom: '10px' }}>
+                            <span style={{ fontWeight: '500' }}>{s.fullName}</span>
                             <select value={s.grade || ''} onChange={(e) => {
                                 const newGrades = gradesData.students.map(st => st.studentId === s.studentId ? {...st, grade: e.target.value} : st);
                                 setGradesData({...gradesData, students: newGrades});
-                            }} style={{ padding: '5px' }}>
-                                <option value="">Brak</option>
+                            }} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #dfe6e9' }}>
+                                <option value="">Brak oceny</option>
                                 {availableGrades.map(g => <option key={g} value={g}>{g}</option>)}
                             </select>
                         </div>
                     ))}
-                    <button onClick={handleSaveGrades} style={{ marginTop: '20px', padding: '10px', backgroundColor: '#0984e3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Zapisz oceny</button>
+                    <button onClick={handleSaveGrades} style={{ marginTop: '10px', padding: '10px 20px', backgroundColor: '#0984e3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Zapisz oceny</button>
+                </div>
+            )}
+
+            {activeTab === 'ustawienia' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                        <h3 style={{ marginTop: 0, color: '#2d3436' }}>Edycja Sekcji</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '400px' }}>
+
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <label style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '5px' }}>Zmień status:</label>
+                                <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }}>
+                                    <option value="REGISTERED">Otwarta (Rejestracja)</option>
+                                    <option value="CLOSED">Zamknięta</option>
+                                </select>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <label style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '5px' }}>Nowy limit osób:</label>
+                                <input type="number" min="1" value={editCapacity} onChange={(e) => setEditCapacity(e.target.value)} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }} />
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <label style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '5px' }}>Zmień temat (opcjonalnie):</label>
+                                <select value={editTopicId} onChange={(e) => setEditTopicId(e.target.value)} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }}>
+                                    <option value="">-- Pozostaw bez zmian --</option>
+                                    {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                </select>
+                            </div>
+
+                            <button onClick={handleUpdateSection} style={{ marginTop: '10px', padding: '10px', backgroundColor: '#fdcb6e', color: '#2d3436', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+                                Zapisz zmiany
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', borderLeft: '5px solid #d63031', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                        <h3 style={{ color: '#d63031', marginTop: 0 }}>Strefa Niebezpieczna</h3>
+                        <p style={{ color: '#636e72', fontSize: '14px', marginBottom: '20px' }}>Usunięcie sekcji jest nieodwracalne. Wszyscy zapisani studenci stracą swoje przypisanie do tego projektu.</p>
+                        <button onClick={handleDeleteSection} style={{ padding: '10px 20px', backgroundColor: '#d63031', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            Usuń całkowicie tę sekcję
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
