@@ -62,9 +62,8 @@ const AdminLayout = () => {
           System Zarządzania
         </h2>
         <div style={{ flexGrow: 1 }}>
-          <Link to="/admin" style={linkStyle}>
-            Użytkownicy
-          </Link>
+          <Link to="/admin" style={linkStyle}>Użytkownicy</Link>
+          <Link to="/admin/semestry" style={linkStyle}>Semestry</Link>
         </div>
 
         <div
