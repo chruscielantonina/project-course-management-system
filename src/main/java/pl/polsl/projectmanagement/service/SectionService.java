@@ -43,6 +43,31 @@ public class SectionService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public List<SectionDashboardResponse> getAllSectionsForStudents() {
+        List<Section> sections = sectionRepository.findAll();
+
+        return sections.stream().map(section -> {
+            List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
+                    .map(ss -> new StudentBasicResponse(
+                            ss.getStudent().getSID(),
+                            ss.getStudent().getSFirstName() + " " + ss.getStudent().getSLastName()
+                    )).toList();
+
+            String teacherName = section.getTeacher().getTFirstName() + " " + section.getTeacher().getTLastName();
+
+            return new SectionDashboardResponse(
+                    section.getSeID(),
+                    section.getSeState().name(),
+                    teacherName,
+                    students.size(),
+                    section.getMaxCapacity(),
+                    section.getProjectFileName(),
+                    students
+            );
+        }).toList();
+    }
+
     @Transactional
     public SectionResponse addSection(UUID appUserId, CreateSectionRequest request) {
         Teacher teacher = getTeacherByAppUserId(appUserId);

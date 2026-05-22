@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.polsl.projectmanagement.dto.ChangeSectionRequest;
+import pl.polsl.projectmanagement.dto.SectionDashboardResponse;
 import pl.polsl.projectmanagement.model.Attendance;
 import pl.polsl.projectmanagement.model.Grade;
 import pl.polsl.projectmanagement.security.UserDetailsImpl;
@@ -60,6 +61,12 @@ public class StudentController {
             return ResponseEntity.ok("Section has been changed successfully.");
         }
         return ResponseEntity.badRequest().body("Error changing section.");
+    }
+
+    @GetMapping("/sections")
+    public ResponseEntity<List<SectionDashboardResponse>> getAllSections() {
+        List<SectionDashboardResponse> sections = sectionService.getAllSectionsForStudents();
+        return ResponseEntity.ok(sections);
     }
 
     @GetMapping("/me/attendance")
