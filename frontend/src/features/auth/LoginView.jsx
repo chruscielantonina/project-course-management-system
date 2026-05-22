@@ -20,17 +20,23 @@ const LoginView = () => {
                 password: password
             });
             console.log("Pełna odpowiedź z backendu:", response.data);
+
             const token = response.data.token;
             const userRole = response.data.role || response.data.accountType || '';
+            const userId = response.data.id; // WYCIĄGAMY ID
 
             localStorage.setItem('token', token);
             localStorage.setItem('userRole', userRole);
             localStorage.setItem('email', response.data.email);
 
+            if (userId) {
+                localStorage.setItem('userId', userId); // ZAPISUJEMY ID
+            }
+
             if (userRole.toUpperCase().includes('TEACHER')) {
                 navigate('/dashboard');
             } else if (userRole.toUpperCase().includes('STUDENT')) {
-                navigate('/stundetPlaceHolder');  //dodać ścieżke do ekranu studenta!!
+                navigate('/student'); // PRZEKIEROWANIE STUDENTA
             } else if (userRole.toUpperCase().includes('ADMIN')) {
                 navigate('/admin');
             } else {

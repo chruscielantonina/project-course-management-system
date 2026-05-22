@@ -8,6 +8,9 @@ import ProjectsView from './features/teacher/ProjectsView';
 import AdminLayout from './features/admin/AdminLayout';
 import AdminDashboard from './features/admin/AdminDashboard';
 import SemestersView from './features/admin/SemestersView';
+import StudentLayout from './features/student/StudentLayout';
+import StudentDashboard from './features/student/StudentDashboard';
+import StudentEnrollment from './features/student/StudentEnrollment';
 
 function App() {
   return (
@@ -20,6 +23,10 @@ function App() {
             <Route path="/sekcje" element={<SectionsView />} />
             <Route path="/projekty" element={<ProjectsView />} />
           </Route>
+            <Route path="/student" element={<StudentLayout />}>
+                <Route index element={<StudentDashboard />} /> {/* Domyślny widok: /student */}
+                <Route path="zapisy" element={<StudentEnrollment />} /> {/* Widok: /student/zapisy */}
+            </Route>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/semestry" element={<SemestersView />} />
