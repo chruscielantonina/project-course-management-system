@@ -2,19 +2,25 @@ import { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axios';
 
 const SectionsView = () => {
+    // --- STANY GŁÓWNE ---
     const [sections, setSections] = useState([]);
     const [topics, setTopics] = useState([]);
+    const [semesters, setSemesters] = useState([]); // NOWY STAN: Lista semestrów
 
+    // --- STEROWANIE WIDOKIEM I ZAKŁADKAMI ---
     const [viewMode, setViewMode] = useState('lista');
     const [activeSection, setActiveSection] = useState(null);
     const [activeTab, setActiveTab] = useState('sklad');
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [selectedYear, setSelectedYear] = useState('2025/2026');
 
+    // ZMIENIONY STAN: Przechowuje ID wybranego semestru do filtrowania
+    const [selectedSemesterId, setSelectedSemesterId] = useState('ALL');
+
+    // --- DANE DLA NOWEJ I EDYTOWANEJ SEKCJI ---
     const [newSectionData, setNewSectionData] = useState({ topicId: '', maxCapacity: 15, sectionStatus: 'REGISTERED' });
     const [editCapacity, setEditCapacity] = useState('');
     const [editTopicId, setEditTopicId] = useState('');
-    const [editStatus, setEditStatus] = useState(''); // Stan edycji statusu
+    const [editStatus, setEditStatus] = useState('');
 
     const [selectedDate, setSelectedDate] = useState('');
     const [attendanceList, setAttendanceList] = useState([]);
@@ -24,6 +30,7 @@ const SectionsView = () => {
     useEffect(() => {
         fetchSections();
         fetchTopics();
+        fetchSemesters(); // Odpalenie pobierania semestrów na starcie
     }, []);
 
     const fetchSections = async () => {
@@ -40,6 +47,22 @@ const SectionsView = () => {
         } catch (error) { console.error("Błąd tematów:", error); }
     };
 
+    // NOWA FUNKCJA: Pobieranie semestrów i ustawienie aktywnego jako domyślny
+    const fetchSemesters = async () => {
+        try {
+            const response = await axiosInstance.get('/api/semesters');
+            setSemesters(response.data);
+
+            // Złap semestr, który jest aktualny i ustaw go od razu w suwaku
+            const currentSem = response.data.find(s => s.isCurrent === true || s.is_current === true);
+            if (currentSem) {
+                setSelectedSemesterId(currentSem.semID || currentSem.semId || currentSem.id);
+            }
+        } catch (error) {
+            console.error("Błąd pobierania semestrów:", error);
+        }
+    };
+
     useEffect(() => {
         if (viewMode === 'szczegoly' && activeSection) {
             if (activeTab === 'obecnosc' && selectedDate) fetchAttendance();
@@ -47,12 +70,13 @@ const SectionsView = () => {
         }
     }, [activeTab, selectedDate, activeSection]);
 
+    // WEJŚCIE W SZCZEGÓŁY
     const openSectionDetails = async (section) => {
         try {
             const res = await axiosInstance.get(`/api/teachers/me/sections/${section.sectionId}`);
             setActiveSection(res.data);
             setEditCapacity(res.data.maxCapacity);
-            setEditStatus(res.data.status || 'REGISTERED'); // Ustawiamy status z bazy
+            setEditStatus(res.data.status || 'REGISTERED');
             setViewMode('szczegoly');
             setActiveTab('sklad');
         } catch (error) {
@@ -64,6 +88,7 @@ const SectionsView = () => {
         }
     };
 
+    // TWORZENIE SEKCJI
     const handleCreateSection = async (e) => {
         e.preventDefault();
         try {
@@ -81,6 +106,7 @@ const SectionsView = () => {
         }
     };
 
+    // EDYCJA SEKCJI
     const handleUpdateSection = async () => {
         try {
             const payload = {
@@ -136,7 +162,20 @@ const SectionsView = () => {
         } catch (error) { alert("Błąd zapisu."); }
     };
 
+    // ==========================
+    // RENDEROWANIE WIDOKÓW
+    // ==========================
+
     if (viewMode === 'lista') {
+
+        // NOWA LOGIKA FILTROWANIA SEKCJI
+        const filteredSections = sections.filter(sec => {
+            if (selectedSemesterId === 'ALL') return true;
+            // Szuka ID semestru wewnątrz obiektu sekcji (niezależnie od tego jak nazwał go backend)
+            const secSemId = sec.semesterId || sec.semId || sec.semesterID || sec.semester?.semID || sec.semester?.id;
+            return secSemId === selectedSemesterId;
+        });
+
         return (
             <div style={{ color: '#2d3436' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -147,15 +186,25 @@ const SectionsView = () => {
                 </div>
 
                 <div style={{ marginBottom: '20px', backgroundColor: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
-                    <label style={{ fontWeight: 'bold', marginRight: '10px' }}>Wyświetl dla roku:</label>
-                    <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #dfe6e9' }}>
-                        <option value="2025/2026">2025/2026 (Bieżący)</option>
-                        <option value="2024/2025">2024/2025 (Archiwum)</option>
+                    <label style={{ fontWeight: 'bold', marginRight: '10px' }}>Wyświetl dla semestru:</label>
+                    <select value={selectedSemesterId} onChange={(e) => setSelectedSemesterId(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #dfe6e9' }}>
+                        <option value="ALL">Wszystkie semestry</option>
+                        {/* DYNAMICZNE RENDEROWANIE SEMESTRÓW Z BAZY */}
+                        {semesters.map(sem => {
+                            const id = sem.semID || sem.semId || sem.id;
+                            const isCur = sem.isCurrent === true || sem.is_current === true;
+                            return (
+                                <option key={id} value={id}>
+                                    {sem.semYear} {sem.semField} {isCur ? '(Bieżący)' : '(Nieaktywny)'}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
 
+                {/* TUTAJ UŻYWAMY filteredSections ZAMIAST ZWYKŁYCH sections */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                    {sections.length > 0 ? sections.map((sec, index) => (
+                    {filteredSections.length > 0 ? filteredSections.map((sec, index) => (
                         <div key={sec.sectionId} style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', borderTop: `4px solid ${sec.status === 'CLOSED' ? '#d63031' : '#00b894'}` }}>
                             <h3 style={{ margin: '0 0 10px 0' }}>Sekcja {index + 1}</h3>
                             <p style={{ fontSize: '14px', color: '#636e72' }}>Zapisanych: <strong>{sec.currentOccupancy} / {sec.maxCapacity}</strong></p>
@@ -163,21 +212,21 @@ const SectionsView = () => {
                                 Zarządzaj Sekcją ➔
                             </button>
                         </div>
-                    )) : <p style={{ color: '#b2bec3' }}>Brak sekcji do wyświetlenia.</p>}
+                    )) : <p style={{ color: '#b2bec3' }}>Brak sekcji do wyświetlenia w wybranym semestrze.</p>}
                 </div>
 
                 {showCreateModal && (
                     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
                         <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', width: '400px', color: '#2d3436' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                <h3 style={{ margin: 0 }}>Kreator nowej sekcji</h3>npm run
+                                <h3 style={{ margin: 0 }}>Kreator nowej sekcji</h3>
                                 <button onClick={() => setShowCreateModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#2d3436', fontWeight: 'bold' }}>✕</button>
                             </div>
                             <form onSubmit={handleCreateSection} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                 <label style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '-10px' }}>Wybierz Temat Projektu:</label>
                                 <select required value={newSectionData.topicId} onChange={(e) => setNewSectionData({...newSectionData, topicId: e.target.value})} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }}>
                                     <option value="">Lista tematów</option>
-                                    {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                    {topics.map(t => <option key={t.toid || t.id} value={t.toid || t.id}>{t.to_name || t.toName || t.name}</option>)}
                                 </select>
 
                                 <label style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '-10px' }}>Początkowy status:</label>
@@ -291,7 +340,7 @@ const SectionsView = () => {
                                 <label style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '5px' }}>Zmień temat (opcjonalnie):</label>
                                 <select value={editTopicId} onChange={(e) => setEditTopicId(e.target.value)} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }}>
                                     <option value="">-- Pozostaw bez zmian --</option>
-                                    {topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                    {topics.map(t => <option key={t.toid || t.id} value={t.toid || t.id}>{t.to_name || t.toName || t.name}</option>)}
                                 </select>
                             </div>
 

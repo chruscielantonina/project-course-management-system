@@ -1,164 +1,212 @@
 import { useState, useEffect } from 'react';
+import axiosInstance from '../../api/axios';
 
-
-const studentsData = [];
 const ProjectsView = () => {
-    const [selectedYear, setSelectedYear] = useState('');
-    const [selectedSection, setSelectedSection] = useState('');
-    const [selectedStudent, setSelectedStudent] = useState(null);
-    const [students, setStudents] = useState([]);
+    const [sections, setSections] = useState([]);
+    const [semesters, setSemesters] = useState([]);
+    const [topics, setTopics] = useState([]); // NOWY STAN: Lista tematów
 
-    const academicYears = ['2025/2026', '2024/2025'];
+    const [selectedSemesterId, setSelectedSemesterId] = useState('ALL');
+    const [selectedSectionId, setSelectedSectionId] = useState('');
 
+    const [activeSectionDetails, setActiveSectionDetails] = useState(null);
 
-    const mockVersions = {
-        "S001": [
-            { id: 1, data: '2025-05-10 14:30', komentarz: 'Naprawiono błąd z logowaniem', plik: 'projekt_v2.zip' },
-            { id: 2, data: '2025-05-01 09:15', komentarz: 'Wstępna wersja projektu', plik: 'projekt_v1.zip' }
-        ],
-        "S002": [
-            { id: 3, data: '2025-05-08 20:00', komentarz: 'Dodano interfejs mobilny', plik: 'fiszki_final.zip' }
-        ]
+    useEffect(() => {
+        fetchSemesters();
+        fetchSections();
+        fetchTopics();
+    }, []);
+
+    const fetchSemesters = async () => {
+        try {
+            const response = await axiosInstance.get('/api/semesters');
+            setSemesters(response.data);
+
+            const currentSem = response.data.find(s => s.isCurrent === true || s.is_current === true);
+            if (currentSem) {
+                const id = currentSem.semID || currentSem.semId || currentSem.id;
+                setSelectedSemesterId(id);
+            }
+        } catch (error) {
+            console.error("Błąd pobierania semestrów:", error);
+        }
+    };
+
+    const fetchSections = async () => {
+        try {
+            const response = await axiosInstance.get('/api/teachers/me/sections');
+            setSections(response.data);
+        } catch (error) {
+            console.error("Błąd pobierania sekcji:", error);
+        }
+    };
+
+    const fetchTopics = async () => {
+        try {
+            const response = await axiosInstance.get('/api/topics');
+            setTopics(response.data);
+        } catch (error) {
+            console.error("Błąd pobierania tematów:", error);
+        }
     };
 
     useEffect(() => {
-        if (selectedYear && selectedSection) {
-            const studentsWithActivity = studentsData.map(s => ({
-                ...s,
-                ostatniaAktywnosc: mockVersions[s.id] ? mockVersions[s.id][0].data : 'Brak nadesłanych wersji'
-            }));
-            setStudents(studentsWithActivity);
+        if (selectedSectionId) {
+            axiosInstance.get(`/api/teachers/me/sections/${selectedSectionId}`)
+                .then(res => setActiveSectionDetails(res.data))
+                .catch(err => console.error("Błąd pobierania szczegółów sekcji:", err));
         } else {
-            setStudents([]);
-            setSelectedStudent(null);
+            setActiveSectionDetails(null);
         }
-    }, [selectedYear, selectedSection]);
+    }, [selectedSectionId]);
 
-    const handleDownload = (fileName) => {
-        alert(`Pobieranie pliku: ${fileName}`);
+    const filteredSections = sections.filter(sec => {
+        if (selectedSemesterId === 'ALL') return true;
+        const secSemId = sec.semesterId || sec.semId || sec.semesterID || sec.semester?.semID || sec.semester?.id;
+        if (!secSemId) return true;
+        return secSemId === selectedSemesterId;
+    });
+
+    const activeSection = sections.find(s => {
+        const id = s.sectionId || s.seID || s.id;
+        return id === selectedSectionId;
+    });
+
+    const getTopicName = () => {
+        if (!activeSectionDetails || topics.length === 0) return "Wczytywanie tematu...";
+
+        const tId = activeSectionDetails.topicId || activeSectionDetails.toID || activeSectionDetails.id;
+        const foundTopic = topics.find(t => (t.toid || t.toID || t.id) === tId);
+
+        return foundTopic ? (foundTopic.to_name || foundTopic.toName || foundTopic.name) : "Nieznany temat";
+    };
+
+    const handleDownload = async (sectionId, fileName) => {
+        try {
+            const response = await axiosInstance.get(`/api/students/sections/${sectionId}/project/download`, {
+                responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+
+            const downloadName = fileName ? fileName.split('_').pop() : `projekt_sekcja.zip`;
+            link.setAttribute('download', downloadName);
+
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (error) {
+            console.error("Błąd pobierania pliku:", error);
+            alert("Nie udało się pobrać pliku. Upewnij się, że projekt został faktycznie wgrany na serwer.");
+        }
     };
 
     return (
         <div>
-            <h2 style={{ marginBottom: '20px' }}> Realizowane Projekty i Wersje</h2>
+            <h2 style={{ marginBottom: '10px', color: '#2d3436' }}>Nadesłane Projekty</h2>
+            <p style={{ color: '#636e72', marginBottom: '20px' }}>
+                Wybierz semestr i konkretną sekcję, aby pobrać projekt wgrany przez grupę.
+            </p>
 
             <div style={{ display: 'flex', gap: '20px', backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <label style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2d3436' }}>Rok Akademicki:</label>
+
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <label style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2d3436' }}>Semestr:</label>
                     <select
-                        value={selectedYear}
-                        onChange={(e) => { setSelectedYear(e.target.value); setSelectedSection(''); setSelectedStudent(null); }}
-                        style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9', minWidth: '200px' }}
+                        value={selectedSemesterId}
+                        onChange={(e) => {
+                            setSelectedSemesterId(e.target.value);
+                            setSelectedSectionId('');
+                        }}
+                        style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }}
                     >
-                        <option value="">-- Wybierz rok --</option>
-                        {academicYears.map(year => (
-                            <option key={year} value={year}>{year}</option>
-                        ))}
+                        <option value="ALL">Wszystkie semestry</option>
+                        {semesters.map(sem => {
+                            const id = sem.semID || sem.semId || sem.id;
+                            const isCur = sem.isCurrent === true || sem.is_current === true;
+                            return (
+                                <option key={id} value={id}>
+                                    {sem.semYear} {sem.semField} {isCur ? '(Bieżący)' : '(Nieaktywny)'}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <label style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2d3436' }}>Sekcja:</label>
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <label style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2d3436' }}>Sekcja (Grupa):</label>
                     <select
-                        value={selectedSection}
-                        onChange={(e) => { setSelectedSection(e.target.value); setSelectedStudent(null); }}
-                        disabled={!selectedYear}
-                        style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9', minWidth: '200px', backgroundColor: !selectedYear ? '#f1f2f6' : 'white' }}
+                        value={selectedSectionId}
+                        onChange={(e) => setSelectedSectionId(e.target.value)}
+                        style={{ padding: '10px', borderRadius: '4px', border: '1px solid #dfe6e9' }}
                     >
                         <option value="">-- Wybierz sekcję --</option>
-                        <option value="SEC_1">Grupa Projektowa 1</option>
-                        <option value="SEC_2">Grupa Projektowa 2</option>
+                        {filteredSections.map((sec, index) => {
+                            const id = sec.sectionId || sec.seID || sec.id;
+                            return (
+                                <option key={id} value={id}>
+                                    Sekcja #{index + 1} ({sec.currentOccupancy || sec.students?.length || 0} osób)
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
             </div>
 
-            {selectedYear && selectedSection ? (
+            {activeSection ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                            <thead>
-                                <tr style={{ borderBottom: '2px solid #dfe6e9', color: '#2d3436' }}>
-                                    <th style={{ padding: '12px 8px' }}>ID</th>
-                                    <th style={{ padding: '12px 8px' }}>Imię i Nazwisko</th>
-                                    <th style={{ padding: '12px 8px' }}>Ostatnia aktywność</th>
-                                    <th style={{ padding: '12px 8px', textAlign: 'center' }}>Akcje</th>
+                    <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', borderLeft: '5px solid #00b894' }}>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f1f2f6', paddingBottom: '15px', marginBottom: '20px' }}>
+                            <div>
+                                <h3 style={{ margin: 0, color: '#2d3436' }}>Projekt</h3>
+                                <p style={{ margin: '5px 0 0 0', color: '#0984e3', fontWeight: 'bold', fontSize: '15px' }}>
+                                    Temat: {getTopicName()}
+                                </p>
+                            </div>
+
+                            {activeSection.projectFileName ? (
+                                <button
+                                    onClick={() => handleDownload(activeSection.sectionId || activeSection.seID || activeSection.id, activeSection.projectFileName)}
+                                    style={{ padding: '10px 20px', backgroundColor: '#27ae60', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 5px rgba(39, 174, 96, 0.3)' }}
+                                >
+                                    ⬇ Pobierz archiwum .ZIP
+                                </button>
+                            ) : (
+                                <span style={{ padding: '8px 15px', backgroundColor: '#f1f2f6', color: '#b2bec3', borderRadius: '5px', fontWeight: 'bold' }}>
+                                    Brak wgranego pliku
+                                </span>
+                            )}
+                        </div>
+
+                        <h4 style={{ margin: '0 0 10px 0', color: '#636e72' }}>Członkowie grupy odpowiedzialni za projekt:</h4>
+                        {activeSection.students && activeSection.students.length > 0 ? (
+                            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+                                <thead>
+                                <tr style={{ backgroundColor: '#f9f9f9', textAlign: 'left', color: '#2d3436' }}>
+                                    <th style={{ padding: '12px', borderBottom: '1px solid #dfe6e9' }}>Imię i Nazwisko Studenta</th>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {students.map(student => (
-                                    <tr
-                                        key={student.id}
-                                        style={{
-                                            borderBottom: '1px solid #dfe6e9',
-                                            backgroundColor: selectedStudent?.id === student.id ? '#f1f2f6' : 'transparent',
-                                            cursor: 'pointer'
-                                        }}
-                                        onClick={() => setSelectedStudent(student)}
-                                    >
-                                        <td style={{ padding: '12px 8px', color: '#636e72' }}>{student.id}</td>
-                                        <td style={{ padding: '12px 8px', fontWeight: '500' }}>{student.imie} {student.nazwisko}</td>
-                                        <td style={{ padding: '12px 8px', color: '#2d3436' }}>{student.ostatniaAktywnosc}</td>
-                                        <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                                            <button
-                                                style={{ padding: '6px 12px', backgroundColor: '#0984e3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}
-                                                onClick={(e) => { e.stopPropagation(); setSelectedStudent(student); }}
-                                            >
-                                                Szczegóły
-                                            </button>
+                                </thead>
+                                <tbody>
+                                {activeSection.students.map(student => (
+                                    <tr key={student.studentId || student.sID || student.id}>
+                                        <td style={{ padding: '12px', borderBottom: '1px solid #f1f2f6', color: '#2d3436' }}>
+                                            👤 {student.fullName || `${student.sFirstName} ${student.sLastName}`}
                                         </td>
                                     </tr>
                                 ))}
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p style={{ color: '#b2bec3', fontStyle: 'italic' }}>Nikt nie jest przypisany do tej sekcji.</p>
+                        )}
                     </div>
-
-                    {selectedStudent && (
-                        <div style={{ backgroundColor: 'white', padding: '25px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', borderLeft: '5px solid #0984e3' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                                <h3 style={{ margin: 0 }}>Nadesłane wersje: {selectedStudent.imie} {selectedStudent.nazwisko}</h3>
-                                <button
-                                    onClick={() => setSelectedStudent(null)}
-                                    style={{ background: 'none', border: 'none', color: '#b2bec3', cursor: 'pointer', fontSize: '20px' }}
-                                >✕</button>
-                            </div>
-
-                            {mockVersions[selectedStudent.id] ? (
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                    <thead>
-                                        <tr style={{ textAlign: 'left', color: '#636e72', fontSize: '14px', borderBottom: '1px solid #dfe6e9' }}>
-                                            <th style={{ padding: '10px' }}>Data przesłania</th>
-                                            <th style={{ padding: '10px' }}>Komentarz studenta</th>
-                                            <th style={{ padding: '10px', textAlign: 'right' }}>Plik</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {mockVersions[selectedStudent.id].map(ver => (
-                                            <tr key={ver.id} style={{ borderBottom: '1px solid #f1f2f6' }}>
-                                                <td style={{ padding: '12px 10px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>{ver.data}</td>
-                                                <td style={{ padding: '12px 10px', color: '#2d3436', fontStyle: 'italic' }}>"{ver.komentarz}"</td>
-                                                <td style={{ padding: '12px 10px', textAlign: 'right' }}>
-                                                    <button
-                                                        onClick={() => handleDownload(ver.plik)}
-                                                        style={{ padding: '8px 15px', backgroundColor: '#27ae60', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
-                                                    >
-                                                        Pobierz .zip
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            ) : (
-                                <div style={{ textAlign: 'center', padding: '20px', color: '#b2bec3', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
-                                    Ten student nie nadesłał jeszcze żadnej wersji projektu.
-                                </div>
-                            )}
-                        </div>
-                    )}
                 </div>
             ) : (
-                <div style={{ padding: '40px', textAlign: 'center', color: '#b2bec3', backgroundColor: '#f5f6fa', borderRadius: '8px' }}>
-                    Wybierz rok akademicki i sekcję, aby zarządzać wersjami projektów.
+                <div style={{ padding: '40px', textAlign: 'center', color: '#b2bec3', backgroundColor: '#f5f6fa', borderRadius: '8px', border: '2px dashed #dfe6e9' }}>
+                    Wybierz sekcję z menu powyżej, aby zobaczyć i pobrać jej projekt.
                 </div>
             )}
         </div>
