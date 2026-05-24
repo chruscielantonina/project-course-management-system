@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.polsl.projectmanagement.dto.AttendanceResponse;
+import pl.polsl.projectmanagement.dto.GradeResponse;
 import pl.polsl.projectmanagement.model.*;
 import pl.polsl.projectmanagement.repository.*;
 
@@ -12,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -124,23 +127,27 @@ public class StudentService {
     }
 
 
-    public List<Attendance> reviewAttendance(UUID appUserId) {
+    public List<AttendanceResponse> reviewAttendance(UUID appUserId) {
         Optional<Student> studentOpt = studentRepository.findByAppUser_Id(appUserId);
         if (studentOpt.isEmpty()) {
             return List.of();
         }
-        return attendanceRepository.findAllByStudentId(studentOpt.get().getSID());
+        return attendanceRepository.findAllByStudentId(studentOpt.get().getSID()).stream()
+                .map(att -> new AttendanceResponse(att.getAID(), att.getADate(), att.getAttendanceStatus().name()))
+                .collect(Collectors.toList());
     }
 
-    public List<Grade> reviewGrades(UUID appUserId) {
+    public List<GradeResponse> reviewGrades(UUID appUserId) {
         Optional<Student> studentOpt = studentRepository.findByAppUser_Id(appUserId);
         if (studentOpt.isEmpty()) {
             return List.of();
         }
-        return gradeRepository.findAllByStudentId(studentOpt.get().getSID());
+        return gradeRepository.findAllByStudentId(studentOpt.get().getSID()).stream()
+                .map(grade -> new GradeResponse(grade.getGrID(), grade.getGrade()))
+                .collect(Collectors.toList());
     }
 
-    public List<Grade> reviewGradesForSection(UUID appUserId, UUID sectionId) {
+    public List<GradeResponse> reviewGradesForSection(UUID appUserId, UUID sectionId) {
         Optional<Student> studentOpt = studentRepository.findByAppUser_Id(appUserId);
         if (studentOpt.isEmpty()) {
             return List.of();
@@ -148,6 +155,8 @@ public class StudentService {
         if (studentSectionRepository.findEnrollment(studentOpt.get().getSID(),sectionId).isEmpty()){
             return List.of();
         }
-        return gradeRepository.findAllByStudentIdAndSectionId(studentOpt.get().getSID(),sectionId);
+        return gradeRepository.findAllByStudentIdAndSectionId(studentOpt.get().getSID(),sectionId).stream()
+                .map(grade -> new GradeResponse(grade.getGrID(), grade.getGrade()))
+                .collect(Collectors.toList());
     }
 }

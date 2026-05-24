@@ -45,7 +45,7 @@ const StudentLayout = () => {
 
                 <div style={{ flexGrow: 1 }}>
                     <Link to="/student" style={getLinkStyle('/student')}>Moja Sekcja</Link>
-                    <Link to="/student/zapisy" style={getLinkStyle('/student/zapisy')}>Zapisy na projekt</Link>
+                    <Link to="/student/enrollment" style={getLinkStyle('/student/enrollment')}>Zapisy na projekt</Link>
                 </div>
 
                 <div style={{ borderTop: '1px solid #636e72', paddingTop: '20px', marginTop: '20px' }}>

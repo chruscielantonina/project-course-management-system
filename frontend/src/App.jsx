@@ -24,8 +24,8 @@ function App() {
             <Route path="/projekty" element={<ProjectsView />} />
           </Route>
             <Route path="/student" element={<StudentLayout />}>
-                <Route index element={<StudentDashboard />} /> {/* Domyślny widok: /student */}
-                <Route path="zapisy" element={<StudentEnrollment />} /> {/* Widok: /student/zapisy */}
+                <Route index element={<StudentDashboard />} /> {/* Default view: /student */}
+                <Route path="enrollment" element={<StudentEnrollment />} /> {/* Corrected path: /student/enrollment */}
             </Route>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<AdminDashboard />} />

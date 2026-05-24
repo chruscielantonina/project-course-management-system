@@ -10,6 +10,10 @@ export const getMyAttendance = () => {
     return axios.get('/api/students/me/attendance');
 };
 
+export const getMyGrades = () => {
+    return axios.get('/api/students/me/grades');
+};
+
 export const signUpForSection = (sectionId) => {
     return axios.post(`/api/students/me/sections/${sectionId}`);
 };

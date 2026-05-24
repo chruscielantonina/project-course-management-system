@@ -1,24 +1,24 @@
 package pl.polsl.projectmanagement.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.webmvc.autoconfigure.WebMvcProperties;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import pl.polsl.projectmanagement.dto.AttendanceResponse;
 import pl.polsl.projectmanagement.dto.ChangeSectionRequest;
+import pl.polsl.projectmanagement.dto.GradeResponse;
 import pl.polsl.projectmanagement.dto.SectionDashboardResponse;
-import pl.polsl.projectmanagement.model.Attendance;
-import pl.polsl.projectmanagement.model.Grade;
 import pl.polsl.projectmanagement.security.UserDetailsImpl;
 import pl.polsl.projectmanagement.service.SectionService;
 import pl.polsl.projectmanagement.service.StudentService;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 
 import java.util.List;
 import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/students")
 @RequiredArgsConstructor
@@ -70,22 +70,22 @@ public class StudentController {
     }
 
     @GetMapping("/me/attendance")
-    public ResponseEntity<List<Attendance>> getAttendance(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        List<Attendance> attendances = studentService.reviewAttendance(userDetails.getId());
+    public ResponseEntity<List<AttendanceResponse>> getAttendance(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        List<AttendanceResponse> attendances = studentService.reviewAttendance(userDetails.getId());
         return ResponseEntity.ok(attendances);
     }
 
     @GetMapping("/me/grades")
-    public ResponseEntity<List<Grade>> getAllGrades(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<GradeResponse>> getAllGrades(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(studentService.reviewGrades(userDetails.getId()));
     }
 
     @GetMapping("/me/sections/{sectionId}/grades")
-    public ResponseEntity<List<Grade>> getGradesForSection(
+    public ResponseEntity<List<GradeResponse>> getGradesForSection(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable UUID sectionId) {
 
-        List<Grade> grades = studentService.reviewGradesForSection(userDetails.getId(), sectionId);
+        List<GradeResponse> grades = studentService.reviewGradesForSection(userDetails.getId(), sectionId);
         return ResponseEntity.ok(grades);
     }
 
