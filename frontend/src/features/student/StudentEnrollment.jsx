@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getSections, getMyAttendance, signUpForSection, signOutFromSection, changeSection } from '../../api/studentApi';
+import { getSections, signUpForSection, signOutFromSection, changeSection } from '../../api/studentApi';
 
 const StudentEnrollment = () => {
     const [sections, setSections] = useState([]);
@@ -10,21 +10,22 @@ const StudentEnrollment = () => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            // Fetch all sections
             const sectionsRes = await getSections();
-            setSections(sectionsRes.data);
+            const sectionsData = sectionsRes.data;
+            setSections(sectionsData);
 
-            // Reset current section and try to find it again
-            setCurrentStudentSectionId(null);
-            try {
-                const attendanceRes = await getMyAttendance();
-                // Check if student has any attendance, which implies being in a section
-                if (attendanceRes.data.length > 0 && attendanceRes.data[0].section) {
-                    setCurrentStudentSectionId(attendanceRes.data[0].section.id);
-                }
-            } catch (err) {
-                // It's normal for this to fail (e.g., 404) if the student isn't in any section yet.
-                console.warn("Could not fetch attendance, assuming student is not in a section.", err);
+            // Final, correct way to find the student's section:
+            const loggedInAppUserId = localStorage.getItem('userId');
+            
+            const mySection = sectionsData.find(section => 
+                // Compare the ID from localStorage with the new `appUserId` field
+                section.enrolledStudents.some(student => student.appUserId === loggedInAppUserId)
+            );
+
+            if (mySection) {
+                setCurrentStudentSectionId(mySection.sectionId);
+            } else {
+                setCurrentStudentSectionId(null);
             }
 
         } catch (err) {
@@ -44,9 +45,9 @@ const StudentEnrollment = () => {
             try {
                 await signUpForSection(sectionId);
                 alert('Zapisano do sekcji!');
-                fetchData(); // Refresh data to show the new state
+                fetchData();
             } catch (err) {
-                alert(`Błąd podczas zapisu do sekcji: ${err.response?.data?.message || err.message}`);
+                alert(`Błąd podczas zapisu do sekcji. Sprawdź konsolę, aby uzyskać więcej informacji.`);
                 console.error(err);
             }
         }
@@ -57,9 +58,9 @@ const StudentEnrollment = () => {
             try {
                 await signOutFromSection(sectionId);
                 alert('Wypisano z sekcji.');
-                fetchData(); // Refresh data
+                fetchData();
             } catch (err) {
-                alert(`Błąd podczas wypisywania z sekcji: ${err.response?.data?.message || err.message}`);
+                alert(`Błąd podczas wypisywania z sekcji. Sprawdź konsolę, aby uzyskać więcej informacji.`);
                 console.error(err);
             }
         }
@@ -70,33 +71,12 @@ const StudentEnrollment = () => {
             try {
                 await changeSection(currentStudentSectionId, newSectionId);
                 alert('Przeniesiono do nowej sekcji!');
-                fetchData(); // Refresh data
+                fetchData();
             } catch (err) {
-                alert(`Błąd podczas zmiany sekcji: ${err.response?.data?.message || err.message}`);
+                alert(`Błąd podczas zmiany sekcji. Sprawdź konsolę, aby uzyskać więcej informacji.`);
                 console.error(err);
             }
         }
-    };
-
-    const renderActionButtons = (section) => {
-        const isEnrolled = currentStudentSectionId === section.sectionId;
-        const isFull = section.currentOccupancy >= section.maxCapacity;
-
-        if (isEnrolled) {
-            return <button onClick={() => handleSignOut(section.sectionId)} style={buttonStyle('red')}>Wypisz się</button>;
-        }
-
-        // If student is enrolled in ANY section, the option should be to change
-        if (currentStudentSectionId && !isFull) {
-            return <button onClick={() => handleChangeSection(section.sectionId)} style={buttonStyle('orange')}>Przenieś się</button>;
-        }
-
-        if (isFull) {
-            return <button style={buttonStyle('disabled')} disabled>Pełna</button>;
-        }
-
-        // Default action: sign up
-        return <button onClick={() => handleSignUp(section.sectionId)} style={buttonStyle('green')}>Zapisz się</button>;
     };
 
     const buttonStyle = (variant) => {
@@ -114,6 +94,22 @@ const StudentEnrollment = () => {
             case 'green': return { ...base, backgroundColor: '#00b894' };
             case 'disabled': return { ...base, backgroundColor: '#b2bec3', cursor: 'not-allowed' };
             default: return base;
+        }
+    };
+
+    const renderActionButtons = (section) => {
+        const isEnrolled = currentStudentSectionId === section.sectionId;
+        const isFull = section.currentOccupancy >= section.maxCapacity;
+        const isEnrolledInAnySection = currentStudentSectionId !== null;
+
+        if (isEnrolled) {
+            return <button onClick={() => handleSignOut(section.sectionId)} style={buttonStyle('red')}>Wypisz się</button>;
+        } else if (isFull) {
+            return <button style={buttonStyle('disabled')} disabled>Pełna</button>;
+        } else if (isEnrolledInAnySection) {
+            return <button onClick={() => handleChangeSection(section.sectionId)} style={buttonStyle('orange')}>Przenieś się</button>;
+        } else {
+            return <button onClick={() => handleSignUp(section.sectionId)} style={buttonStyle('green')}>Zapisz się</button>;
         }
     };
 

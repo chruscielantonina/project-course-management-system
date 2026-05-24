@@ -26,7 +26,6 @@ public class StudentService {
 
     @Transactional
     public boolean signUpForSection(UUID appUserId, UUID sectionID) {
-        // Use the correct method to find the student profile by the application user's ID
         Optional<Student> studentOpt = studentRepository.findByAppUser_Id(appUserId);
         if (studentOpt.isEmpty()) {
             logger.error("Sign-up failed: Student profile not found for AppUser ID: {}", appUserId);
@@ -41,7 +40,6 @@ public class StudentService {
         }
         Section section = sectionOpt.get();
 
-        // Use the student's actual primary key (student.getSID()) for the check
         if (studentSectionRepository.existsByStudent_sID(student.getSID())) {
             logger.error("Sign-up failed: Student {} is already enrolled in a section.", student.getSID());
             return false;
@@ -65,7 +63,6 @@ public class StudentService {
 
     @Transactional
     public boolean signOutFromSection(UUID appUserId, UUID sectionId) {
-        // Find the student profile first
         Optional<Student> studentOpt = studentRepository.findByAppUser_Id(appUserId);
         if (studentOpt.isEmpty()) {
             logger.error("Sign-out failed: Student profile not found for AppUser ID: {}", appUserId);
@@ -73,7 +70,6 @@ public class StudentService {
         }
         Student student = studentOpt.get();
 
-        // Then find the specific enrollment using the student's actual ID
         return studentSectionRepository.findEnrollment(student.getSID(), sectionId)
                 .map(enrollment -> {
                     studentSectionRepository.delete(enrollment);
@@ -92,7 +88,6 @@ public class StudentService {
             return false;
         }
 
-        // Find the student profile
         Optional<Student> studentOpt = studentRepository.findByAppUser_Id(appUserId);
         if (studentOpt.isEmpty()) {
             logger.error("Change section failed: Student profile not found for AppUser ID: {}", appUserId);
@@ -100,23 +95,32 @@ public class StudentService {
         }
         Student student = studentOpt.get();
 
-        // Ensure the student is actually in the old section before signing out
-        if (!studentSectionRepository.existsByStudent_sIDAndSection_seID(student.getSID(), oldSectionId)) {
-            logger.error("Change section failed: Student {} is not enrolled in the old section {}", student.getSID(), oldSectionId);
+        Optional<Section> newSectionOpt = sectionRepository.findById(newSectionId);
+        if (newSectionOpt.isEmpty()) {
+            logger.error("Change section failed: New section not found with ID: {}", newSectionId);
+            return false;
+        }
+        Section newSection = newSectionOpt.get();
+
+        int currentOccupancy = studentSectionRepository.findBySectionSeID(newSectionId).size();
+        if (currentOccupancy >= newSection.getMaxCapacity()) {
+            logger.error("Change section failed: New section {} is full.", newSectionId);
             return false;
         }
 
-        // Attempt to sign up for the new section first.
-        // We pass the appUserId, as signUpForSection expects it.
-        if (signUpForSection(appUserId, newSectionId)) {
-            // If successful, sign out from the old one
-            signOutFromSection(appUserId, oldSectionId);
-            return true;
-        } else {
-            // If sign-up fails, the student remains in their old section.
-            logger.error("Change section failed because signing up for new section {} failed.", newSectionId);
+        Optional<StudentSection> enrollmentOpt = studentSectionRepository.findEnrollment(student.getSID(), oldSectionId);
+        if (enrollmentOpt.isEmpty()) {
+            logger.error("Change section failed: Current enrollment for student {} in section {} not found.", student.getSID(), oldSectionId);
             return false;
         }
+        
+        StudentSection currentEnrollment = enrollmentOpt.get();
+        currentEnrollment.setSection(newSection);
+        currentEnrollment.setEnrollmentDate(LocalDate.now());
+        studentSectionRepository.save(currentEnrollment);
+
+        logger.info("Student {} successfully changed section from {} to {}", student.getSID(), oldSectionId, newSectionId);
+        return true;
     }
 
 

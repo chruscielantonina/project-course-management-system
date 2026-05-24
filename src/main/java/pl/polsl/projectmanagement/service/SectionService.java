@@ -1,21 +1,26 @@
 package pl.polsl.projectmanagement.service;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.*;
 import pl.polsl.projectmanagement.repository.*;
-import org.springframework.core.io.Resource;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class SectionService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SectionService.class);
     private final TeacherRepository teacherRepository;
     private final TopicRepository topicRepository;
     private final SemesterRepository semesterRepository;
@@ -51,6 +56,7 @@ public class SectionService {
             List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
                     .map(ss -> new StudentBasicResponse(
                             ss.getStudent().getSID(),
+                            ss.getStudent().getAppUser().getId(), // Add the appUserId
                             ss.getStudent().getSFirstName() + " " + ss.getStudent().getSLastName()
                     )).toList();
 
@@ -60,7 +66,7 @@ public class SectionService {
 
             return new SectionDashboardResponse(
                     section.getSeID(),
-                    topicName, // Added topic name
+                    topicName,
                     section.getSeState().name(),
                     teacherName,
                     students.size(),
@@ -139,6 +145,7 @@ public class SectionService {
             List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
                     .map(ss -> new StudentBasicResponse(
                             ss.getStudent().getSID(),
+                            ss.getStudent().getAppUser().getId(), // Add the appUserId
                             ss.getStudent().getSFirstName() + " " + ss.getStudent().getSLastName()
                     )).toList();
 
@@ -213,6 +220,7 @@ public class SectionService {
         return studentRepository.findAvailableStudents().stream()
                 .map(s -> new StudentBasicResponse(
                         s.getSID(),
+                        s.getAppUser().getId(), // Add the appUserId
                         s.getSFirstName() + " " + s.getSLastName()
                 )).toList();
     }
