@@ -1,11 +1,13 @@
 package pl.polsl.projectmanagement.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcProperties;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.polsl.projectmanagement.dto.ChangeSectionRequest;
+import pl.polsl.projectmanagement.dto.SectionDashboardResponse;
 import pl.polsl.projectmanagement.model.Attendance;
 import pl.polsl.projectmanagement.model.Grade;
 import pl.polsl.projectmanagement.security.UserDetailsImpl;
@@ -25,9 +27,9 @@ public class StudentController {
     private final StudentService studentService;
     private final SectionService sectionService;
 
-    @PostMapping("/{studentId}/sections/{sectionId}")
-    public ResponseEntity<String> signUpForSection(@PathVariable UUID studentId, @PathVariable UUID sectionId) {
-        boolean success = studentService.signUpForSection(studentId, sectionId);
+    @PostMapping("/me/sections/{sectionId}")
+    public ResponseEntity<String> signUpForSection(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID sectionId) {
+        boolean success = studentService.signUpForSection(userDetails.getId(), sectionId);
 
         if (success) {
             return ResponseEntity.ok("Successfully signed up for the section.");
@@ -36,21 +38,21 @@ public class StudentController {
         }
     }
 
-    @DeleteMapping("/{studentId}/sections/{sectionId}")
-    public ResponseEntity<Void> signOutFromSection(@PathVariable UUID studentId, @PathVariable UUID sectionId) {
-        if (studentService.signOutFromSection(studentId, sectionId)) {
+    @DeleteMapping("/me/sections/{sectionId}")
+    public ResponseEntity<Void> signOutFromSection(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID sectionId) {
+        if (studentService.signOutFromSection(userDetails.getId(), sectionId)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }
 
-    @PutMapping("/{studentId}/sections/change")
+    @PutMapping("/me/sections/change")
     public ResponseEntity<String> changeSection(
-            @PathVariable UUID studentId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestBody ChangeSectionRequest request) {
 
         boolean success = studentService.changeSection(
-                studentId,
+                userDetails.getId(),
                 request.getOldSectionId(),
                 request.getNewSectionId()
         );
@@ -61,23 +63,29 @@ public class StudentController {
         return ResponseEntity.badRequest().body("Error changing section.");
     }
 
-    @GetMapping("/{studentId}/attendance")
-    public ResponseEntity<List<Attendance>> getAttendance(@PathVariable UUID studentId) {
-        List<Attendance> attendances = studentService.reviewAttendance(studentId);
+    @GetMapping("/sections")
+    public ResponseEntity<List<SectionDashboardResponse>> getAllSections() {
+        List<SectionDashboardResponse> sections = sectionService.getAllSectionsForStudents();
+        return ResponseEntity.ok(sections);
+    }
+
+    @GetMapping("/me/attendance")
+    public ResponseEntity<List<Attendance>> getAttendance(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        List<Attendance> attendances = studentService.reviewAttendance(userDetails.getId());
         return ResponseEntity.ok(attendances);
     }
 
-    @GetMapping("/{studentId}/grades")
-    public ResponseEntity<List<Grade>> getAllGrades(@PathVariable UUID studentId) {
-        return ResponseEntity.ok(studentService.reviewGrades(studentId));
+    @GetMapping("/me/grades")
+    public ResponseEntity<List<Grade>> getAllGrades(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(studentService.reviewGrades(userDetails.getId()));
     }
 
-    @GetMapping("/{studentId}/sections/{sectionId}/grades")
+    @GetMapping("/me/sections/{sectionId}/grades")
     public ResponseEntity<List<Grade>> getGradesForSection(
-            @PathVariable UUID studentId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable UUID sectionId) {
 
-        List<Grade> grades = studentService.reviewGradesForSection(studentId, sectionId);
+        List<Grade> grades = studentService.reviewGradesForSection(userDetails.getId(), sectionId);
         return ResponseEntity.ok(grades);
     }
 
