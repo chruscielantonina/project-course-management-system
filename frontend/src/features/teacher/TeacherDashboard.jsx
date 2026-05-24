@@ -41,27 +41,34 @@ const TeacherDashboard = () => {
                     <p style={{ color: '#b2bec3', fontStyle: 'italic' }}>Brak tematów w bazie danych.</p>
                 ) : (
                     <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
-                        {topics.map(topic => (
-                            <li key={topic.id} style={{
-                                padding: '15px 10px',
-                                borderBottom: '1px solid #f1f2f6',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}>
-                                <strong style={{ fontSize: '15px', color: '#2d3436' }}>{topic.name}</strong>
-                                <span style={{
-                                    padding: '4px 10px',
-                                    borderRadius: '12px',
-                                    fontSize: '12px',
-                                    fontWeight: 'bold',
-                                    backgroundColor: topic.active ? '#e3fce0' : '#f1f2f6',
-                                    color: topic.active ? '#27ae60' : '#7f8fa6'
+                        {topics.map(topic => {
+                            // Kuloodporne sprawdzenie nazw przychodzących z backendu
+                            const isTopicActive = topic.active === true || topic.isActive === true || topic.is_active === true;
+                            const topicId = topic.toid || topic.id;
+                            const topicName = topic.to_name || topic.toName || topic.name;
+
+                            return (
+                                <li key={topicId} style={{
+                                    padding: '15px 10px',
+                                    borderBottom: '1px solid #f1f2f6',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
                                 }}>
-                                    {topic.active ? 'AKTYWNY' : 'NIEAKTYWNY'}
-                                </span>
-                            </li>
-                        ))}
+                                    <strong style={{ fontSize: '15px', color: '#2d3436' }}>{topicName}</strong>
+                                    <span style={{
+                                        padding: '4px 10px',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        fontWeight: 'bold',
+                                        backgroundColor: isTopicActive ? '#e3fce0' : '#f1f2f6',
+                                        color: isTopicActive ? '#27ae60' : '#7f8fa6'
+                                    }}>
+                                        {isTopicActive ? 'AKTYWNY' : 'NIEAKTYWNY'}
+                                    </span>
+                                </li>
+                            );
+                        })}
                     </ul>
                 )}
             </div>
