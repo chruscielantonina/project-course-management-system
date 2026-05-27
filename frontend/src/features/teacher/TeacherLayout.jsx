@@ -60,9 +60,11 @@ const TeacherLayout = () => {
                 </div>
             </div>
 
-            <div style={{ flexGrow: 1, padding: '30px', overflowY: 'auto', height: '100vh', boxSizing: 'border-box' }}>
-                <Outlet />
-            </div>
+            <main style={{ flexGrow: 1, padding: '30px', overflowY: 'auto', height: '100vh', boxSizing: 'border-box' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    <Outlet />
+                </div>
+            </main>
 
         </div>
     );

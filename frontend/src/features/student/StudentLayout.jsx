@@ -8,7 +8,7 @@ const StudentLayout = () => {
     const currentUserEmail = localStorage.getItem('email') || 'Brak emaila';
 
     const handleLogout = () => {
-        localStorage.clear(); // Czyści wszystko, w tym userId
+        localStorage.clear();
         navigate('/');
     };
 
@@ -23,7 +23,6 @@ const StudentLayout = () => {
         boxSizing: 'border-box'
     };
 
-    // Funkcja do stylowania aktywnego linku
     const getLinkStyle = (path) => ({
         color: '#dfe6e9',
         textDecoration: 'none',
@@ -31,7 +30,7 @@ const StudentLayout = () => {
         marginBottom: '10px',
         borderRadius: '5px',
         display: 'block',
-        backgroundColor: location.pathname === path ? '#0984e3' : '#636e72', // Zmienia kolor, gdy aktywne
+        backgroundColor: location.pathname === path ? '#0984e3' : '#636e72',
         fontWeight: 'bold',
         transition: '0.3s'
     });
@@ -63,9 +62,11 @@ const StudentLayout = () => {
                 </div>
             </div>
 
-            <div style={{ flexGrow: 1, padding: '30px', overflowY: 'auto', height: '100vh', boxSizing: 'border-box' }}>
-                <Outlet />
-            </div>
+            <main style={{ flexGrow: 1, padding: '30px', overflowY: 'auto', height: '100vh', boxSizing: 'border-box' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    <Outlet />
+                </div>
+            </main>
         </div>
     );
 };

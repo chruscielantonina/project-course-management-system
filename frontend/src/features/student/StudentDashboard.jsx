@@ -37,7 +37,6 @@ const StudentDashboard = () => {
         fetchData();
     }, []);
 
-    // --- File Handler Component ---
     const ProjectFileHandler = ({ section }) => {
         const [selectedFile, setSelectedFile] = useState(null);
 
@@ -179,7 +178,6 @@ const StudentDashboard = () => {
                     </div>
 
                     <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
-                        {/* Left Column */}
                         <div style={{ flex: '2', display: 'flex', flexDirection: 'column', gap: '30px' }}>
                             <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
                                 <h4 style={{ marginTop: 0, marginBottom: '15px', color: '#2d3436', borderBottom: '1px solid #f1f2f6', paddingBottom: '10px' }}>

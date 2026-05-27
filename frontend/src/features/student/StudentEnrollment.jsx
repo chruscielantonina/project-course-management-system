@@ -10,11 +10,9 @@ const StudentEnrollment = () => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            // Fetch all available sections for enrollment
             const sectionsRes = await getSections();
             setSections(sectionsRes.data);
 
-            // Separately, check if the student is already in a section
             try {
                 const mySectionRes = await getMySection();
                 if (mySectionRes.data) {
@@ -23,11 +21,10 @@ const StudentEnrollment = () => {
                     setCurrentStudentSectionId(null);
                 }
             } catch (err) {
-                // A 404 error is expected if not enrolled, so we can safely ignore it
                 if (err.response && err.response.status === 404) {
                     setCurrentStudentSectionId(null);
                 } else {
-                    throw err; // Re-throw other errors
+                    throw err;
                 }
             }
 

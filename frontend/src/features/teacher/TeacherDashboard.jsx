@@ -42,7 +42,6 @@ const TeacherDashboard = () => {
                 ) : (
                     <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
                         {topics.map(topic => {
-                            // Kuloodporne sprawdzenie nazw przychodzących z backendu
                             const isTopicActive = topic.active === true || topic.isActive === true || topic.is_active === true;
                             const topicId = topic.toid || topic.id;
                             const topicName = topic.to_name || topic.toName || topic.name;

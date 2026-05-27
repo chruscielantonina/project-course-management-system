@@ -185,8 +185,6 @@ const ProjectsView = () => {
                         </div>
 
                         <h4 style={{ margin: '0 0 10px 0', color: '#636e72' }}>Członkowie grupy odpowiedzialni za projekt:</h4>
-
-                        {/* WYOŚWIETLANIE LISTY Z NOWEJ ZMIENNEJ studentsList */}
                         {studentsList.length > 0 ? (
                             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
                                 <thead>
