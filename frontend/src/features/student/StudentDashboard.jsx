@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getMySection, getMyGrades, getMyAttendance } from '../../api/studentApi';
+import { getMySection, getMyGrades, getMyAttendance, uploadProjectFile, downloadProjectFile, deleteProjectFile } from '../../api/studentApi';
 
 const StudentDashboard = () => {
     const [mySection, setMySection] = useState(null);
@@ -9,36 +9,125 @@ const StudentDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch the student's specific section
-                const sectionRes = await getMySection();
-                setMySection(sectionRes.data);
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const sectionRes = await getMySection();
+            setMySection(sectionRes.data);
 
-                // If section is found, fetch grades and attendance
+            if (sectionRes.data) {
                 const gradesRes = await getMyGrades();
                 setGrades(gradesRes.data || []);
-
                 const attendanceRes = await getMyAttendance();
                 setAttendance(attendanceRes.data || []);
+            }
+        } catch (err) {
+            if (err.response && err.response.status === 404) {
+                setMySection(null);
+            } else {
+                setError('Nie udało się załadować danych o Twojej sekcji.');
+                console.error(err);
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    // --- File Handler Component ---
+    const ProjectFileHandler = ({ section }) => {
+        const [selectedFile, setSelectedFile] = useState(null);
+
+        const handleFileChange = (event) => {
+            setSelectedFile(event.target.files[0]);
+        };
+
+        const handleUpload = async () => {
+            if (!selectedFile) {
+                alert('Proszę wybrać plik.');
+                return;
+            }
+            try {
+                await uploadProjectFile(section.sectionId, selectedFile);
+                alert('Plik został wysłany!');
+                fetchData(); // Refresh data
             } catch (err) {
-                // A 404 error from getMySection is normal if the student is not enrolled
-                if (err.response && err.response.status === 404) {
-                    setMySection(null);
-                } else {
-                    setError('Nie udało się załadować danych o Twojej sekcji.');
-                    console.error(err);
-                }
-            } finally {
-                setIsLoading(false);
+                alert('Błąd podczas wysyłania pliku.');
+                console.error(err);
             }
         };
 
-        fetchData();
+        const handleDownload = async () => {
+            try {
+                const response = await downloadProjectFile(section.sectionId);
+                
+                const contentDisposition = response.headers['content-disposition'];
+                let filename = section.projectFileName; // fallback
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                    if (filenameMatch.length > 1) {
+                        filename = filenameMatch[1];
+                    }
+                }
 
-    }, []);
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', filename);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            } catch (err) {
+                alert('Błąd podczas pobierania pliku.');
+                console.error(err);
+            }
+        };
+
+        const handleDelete = async () => {
+            if (window.confirm('Czy na pewno chcesz usunąć plik projektu?')) {
+                try {
+                    await deleteProjectFile(section.sectionId);
+                    alert('Plik został usunięty.');
+                    fetchData(); // Refresh data
+                } catch (err) {
+                    alert('Błąd podczas usuwania pliku.');
+                    console.error(err);
+                }
+            }
+        };
+
+        const getCleanFileName = (fullFileName) => {
+            if (!fullFileName) return '';
+            const parts = fullFileName.split('_');
+            return parts.length > 2 ? parts.slice(2).join('_') : fullFileName;
+        };
+
+        return (
+            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                <h4 style={{ marginTop: 0, marginBottom: '15px', color: '#2d3436', borderBottom: '1px solid #f1f2f6', paddingBottom: '10px' }}>
+                    Plik Projektu
+                </h4>
+                {section.projectFileName ? (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getCleanFileName(section.projectFileName)}</span>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button onClick={handleDownload} style={{ padding: '8px 12px', backgroundColor: '#0984e3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Pobierz</button>
+                            <button onClick={handleDelete} style={{ padding: '8px 12px', backgroundColor: '#d63031', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Usuń</button>
+                        </div>
+                    </div>
+                ) : (
+                    <div>
+                        <input type="file" onChange={handleFileChange} style={{ marginBottom: '10px', display: 'block' }} />
+                        <button onClick={handleUpload} style={{ padding: '8px 15px', backgroundColor: '#27ae60', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Wyślij plik</button>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
 
     if (isLoading) {
         return (
@@ -91,17 +180,20 @@ const StudentDashboard = () => {
 
                     <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
                         {/* Left Column */}
-                        <div style={{ flex: '2', backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                            <h4 style={{ marginTop: 0, marginBottom: '15px', color: '#2d3436', borderBottom: '1px solid #f1f2f6', paddingBottom: '10px' }}>
-                                Skład sekcji
-                            </h4>
-                            <ul style={{ listStyle: 'none', padding: 0, marginTop: 0 }}>
-                                {mySection.enrolledStudents.map(student => (
-                                    <li key={student.studentId} style={{ padding: '10px 5px', borderBottom: '1px solid #f1f2f6', color: '#636e72' }}>
-                                        {student.fullName}
-                                    </li>
-                                ))}
-                            </ul>
+                        <div style={{ flex: '2', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                                <h4 style={{ marginTop: 0, marginBottom: '15px', color: '#2d3436', borderBottom: '1px solid #f1f2f6', paddingBottom: '10px' }}>
+                                    Skład sekcji
+                                </h4>
+                                <ul style={{ listStyle: 'none', padding: 0, marginTop: 0 }}>
+                                    {mySection.enrolledStudents.map(student => (
+                                        <li key={student.studentId} style={{ padding: '10px 5px', borderBottom: '1px solid #f1f2f6', color: '#636e72' }}>
+                                            {student.fullName}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <ProjectFileHandler section={mySection} />
                         </div>
 
                         {/* Right Column */}
