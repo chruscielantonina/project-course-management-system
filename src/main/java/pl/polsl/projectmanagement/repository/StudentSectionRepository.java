@@ -20,6 +20,8 @@ public interface StudentSectionRepository extends JpaRepository<StudentSection, 
 
     boolean existsByStudent_sIDAndSection_seID(UUID studentId, UUID sectionId);
 
-    // Check if a student is enrolled in ANY section
     boolean existsByStudent_sID(UUID studentId);
+
+    // Find an enrollment by the AppUser's ID
+    Optional<StudentSection> findByStudent_AppUser_Id(UUID appUserId);
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getSections, signUpForSection, signOutFromSection, changeSection } from '../../api/studentApi';
+import { getSections, getMySection, signUpForSection, signOutFromSection, changeSection } from '../../api/studentApi';
 
 const StudentEnrollment = () => {
     const [sections, setSections] = useState([]);
@@ -10,22 +10,25 @@ const StudentEnrollment = () => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
+            // Fetch all available sections for enrollment
             const sectionsRes = await getSections();
-            const sectionsData = sectionsRes.data;
-            setSections(sectionsData);
+            setSections(sectionsRes.data);
 
-            // Final, correct way to find the student's section:
-            const loggedInAppUserId = localStorage.getItem('userId');
-            
-            const mySection = sectionsData.find(section => 
-                // Compare the ID from localStorage with the new `appUserId` field
-                section.enrolledStudents.some(student => student.appUserId === loggedInAppUserId)
-            );
-
-            if (mySection) {
-                setCurrentStudentSectionId(mySection.sectionId);
-            } else {
-                setCurrentStudentSectionId(null);
+            // Separately, check if the student is already in a section
+            try {
+                const mySectionRes = await getMySection();
+                if (mySectionRes.data) {
+                    setCurrentStudentSectionId(mySectionRes.data.sectionId);
+                } else {
+                    setCurrentStudentSectionId(null);
+                }
+            } catch (err) {
+                // A 404 error is expected if not enrolled, so we can safely ignore it
+                if (err.response && err.response.status === 404) {
+                    setCurrentStudentSectionId(null);
+                } else {
+                    throw err; // Re-throw other errors
+                }
             }
 
         } catch (err) {
