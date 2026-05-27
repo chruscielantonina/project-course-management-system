@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -50,13 +51,14 @@ public class SectionService {
 
     @Transactional(readOnly = true)
     public List<SectionDashboardResponse> getAllSectionsForStudents() {
-        List<Section> sections = sectionRepository.findAll();
+        // Fetch only sections with REGISTERED status, as requested
+        List<Section> sections = sectionRepository.findBySeState(SectionStatus.REGISTERED);
 
         return sections.stream().map(section -> {
             List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
                     .map(ss -> new StudentBasicResponse(
                             ss.getStudent().getSID(),
-                            ss.getStudent().getAppUser().getId(), // Add the appUserId
+                            ss.getStudent().getAppUser().getId(),
                             ss.getStudent().getSFirstName() + " " + ss.getStudent().getSLastName()
                     )).toList();
 
@@ -145,7 +147,7 @@ public class SectionService {
             List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
                     .map(ss -> new StudentBasicResponse(
                             ss.getStudent().getSID(),
-                            ss.getStudent().getAppUser().getId(), // Add the appUserId
+                            ss.getStudent().getAppUser().getId(),
                             ss.getStudent().getSFirstName() + " " + ss.getStudent().getSLastName()
                     )).toList();
 
@@ -220,7 +222,7 @@ public class SectionService {
         return studentRepository.findAvailableStudents().stream()
                 .map(s -> new StudentBasicResponse(
                         s.getSID(),
-                        s.getAppUser().getId(), // Add the appUserId
+                        s.getAppUser().getId(),
                         s.getSFirstName() + " " + s.getSLastName()
                 )).toList();
     }

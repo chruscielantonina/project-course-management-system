@@ -27,6 +27,13 @@ public class StudentController {
     private final StudentService studentService;
     private final SectionService sectionService;
 
+    @GetMapping("/me/section")
+    public ResponseEntity<SectionDashboardResponse> getMySection(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return studentService.getMySection(userDetails.getId())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/me/sections/{sectionId}")
     public ResponseEntity<String> signUpForSection(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable UUID sectionId) {
         boolean success = studentService.signUpForSection(userDetails.getId(), sectionId);

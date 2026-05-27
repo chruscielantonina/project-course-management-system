@@ -2,6 +2,10 @@ import axios from './axios';
 
 // We manually add the /api prefix to avoid changing the global axios config
 
+export const getMySection = () => {
+    return axios.get('/api/students/me/section');
+};
+
 export const getSections = () => {
     return axios.get('/api/students/sections');
 };

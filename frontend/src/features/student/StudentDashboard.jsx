@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getSections, getMyGrades, getMyAttendance } from '../../api/studentApi';
+import { getMySection, getMyGrades, getMyAttendance } from '../../api/studentApi';
 
 const StudentDashboard = () => {
     const [mySection, setMySection] = useState(null);
@@ -12,28 +12,25 @@ const StudentDashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const sectionsRes = await getSections();
-                const sectionsData = sectionsRes.data;
-                
-                const loggedInAppUserId = localStorage.getItem('userId');
-                
-                const foundSection = sectionsData.find(section => 
-                    section.enrolledStudents.some(student => student.appUserId === loggedInAppUserId)
-                );
+                // Fetch the student's specific section
+                const sectionRes = await getMySection();
+                setMySection(sectionRes.data);
 
-                setMySection(foundSection);
+                // If section is found, fetch grades and attendance
+                const gradesRes = await getMyGrades();
+                setGrades(gradesRes.data || []);
 
-                if (foundSection) {
-                    const gradesRes = await getMyGrades();
-                    setGrades(gradesRes.data || []);
-
-                    const attendanceRes = await getMyAttendance();
-                    setAttendance(attendanceRes.data || []);
-                }
+                const attendanceRes = await getMyAttendance();
+                setAttendance(attendanceRes.data || []);
 
             } catch (err) {
-                setError('Nie udało się załadować danych o Twojej sekcji.');
-                console.error(err);
+                // A 404 error from getMySection is normal if the student is not enrolled
+                if (err.response && err.response.status === 404) {
+                    setMySection(null);
+                } else {
+                    setError('Nie udało się załadować danych o Twojej sekcji.');
+                    console.error(err);
+                }
             } finally {
                 setIsLoading(false);
             }

@@ -1,12 +1,13 @@
 package pl.polsl.projectmanagement.service;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
-import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import pl.polsl.projectmanagement.dto.AttendanceResponse;
-import pl.polsl.projectmanagement.dto.GradeResponse;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import pl.polsl.projectmanagement.dto.*;
 import pl.polsl.projectmanagement.model.*;
 import pl.polsl.projectmanagement.repository.*;
 
@@ -21,11 +22,42 @@ import java.util.stream.Collectors;
 public class StudentService {
 
     private static final Logger logger = LoggerFactory.getLogger(StudentService.class);
-    private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
+    private final TopicRepository topicRepository;
+    private final SemesterRepository semesterRepository;
     private final SectionRepository sectionRepository;
+    private final StudentRepository studentRepository;
     private final StudentSectionRepository studentSectionRepository;
     private final AttendanceRepository attendanceRepository;
     private final GradeRepository gradeRepository;
+
+    @Transactional(readOnly = true)
+    public Optional<SectionDashboardResponse> getMySection(UUID appUserId) {
+        return studentSectionRepository.findByStudent_AppUser_Id(appUserId)
+                .map(studentSection -> {
+                    Section section = studentSection.getSection();
+                    List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
+                            .map(ss -> new StudentBasicResponse(
+                                    ss.getStudent().getSID(),
+                                    ss.getStudent().getAppUser().getId(),
+                                    ss.getStudent().getSFirstName() + " " + ss.getStudent().getSLastName()
+                            )).toList();
+
+                    String teacherName = section.getTeacher().getTFirstName() + " " + section.getTeacher().getTLastName();
+                    String topicName = section.getTopic() != null ? section.getTopic().getToName() : "N/A";
+
+                    return new SectionDashboardResponse(
+                            section.getSeID(),
+                            topicName,
+                            section.getSeState().name(),
+                            teacherName,
+                            students.size(),
+                            section.getMaxCapacity(),
+                            section.getProjectFileName(),
+                            students
+                    );
+                });
+    }
 
     @Transactional
     public boolean signUpForSection(UUID appUserId, UUID sectionID) {
