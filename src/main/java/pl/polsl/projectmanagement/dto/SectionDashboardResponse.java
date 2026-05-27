@@ -10,5 +10,7 @@ public record SectionDashboardResponse(
         int currentOccupancy,
         int maxCapacity,
         String projectFileName,
-        List<StudentBasicResponse> enrolledStudents
+        List<StudentBasicResponse> enrolledStudents,
+        UUID semesterId,
+        int semesterYear
 ) {}
