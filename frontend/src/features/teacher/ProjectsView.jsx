@@ -4,7 +4,7 @@ import axiosInstance from '../../api/axios';
 const ProjectsView = () => {
     const [sections, setSections] = useState([]);
     const [semesters, setSemesters] = useState([]);
-    const [topics, setTopics] = useState([]); // NOWY STAN: Lista tematów
+    const [topics, setTopics] = useState([]);
 
     const [selectedSemesterId, setSelectedSemesterId] = useState('ALL');
     const [selectedSectionId, setSelectedSectionId] = useState('');
@@ -103,6 +103,8 @@ const ProjectsView = () => {
         }
     };
 
+    const studentsList = activeSection ? (activeSection.students || activeSection.enrolledStudents || []) : [];
+
     return (
         <div>
             <h2 style={{ marginBottom: '10px', color: '#2d3436' }}>Nadesłane Projekty</h2>
@@ -145,9 +147,10 @@ const ProjectsView = () => {
                         <option value="">-- Wybierz sekcję --</option>
                         {filteredSections.map((sec, index) => {
                             const id = sec.sectionId || sec.seID || sec.id;
+                            const count = sec.currentOccupancy || sec.students?.length || sec.enrolledStudents?.length || 0;
                             return (
                                 <option key={id} value={id}>
-                                    Sekcja #{index + 1} ({sec.currentOccupancy || sec.students?.length || 0} osób)
+                                    Sekcja #{index + 1} ({count} osób)
                                 </option>
                             );
                         })}
@@ -182,7 +185,9 @@ const ProjectsView = () => {
                         </div>
 
                         <h4 style={{ margin: '0 0 10px 0', color: '#636e72' }}>Członkowie grupy odpowiedzialni za projekt:</h4>
-                        {activeSection.students && activeSection.students.length > 0 ? (
+
+                        {/* WYOŚWIETLANIE LISTY Z NOWEJ ZMIENNEJ studentsList */}
+                        {studentsList.length > 0 ? (
                             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
                                 <thead>
                                 <tr style={{ backgroundColor: '#f9f9f9', textAlign: 'left', color: '#2d3436' }}>
@@ -190,10 +195,10 @@ const ProjectsView = () => {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {activeSection.students.map(student => (
-                                    <tr key={student.studentId || student.sID || student.id}>
+                                {studentsList.map(student => (
+                                    <tr key={student.studentId || student.sID || student.sid || student.id || student.student}>
                                         <td style={{ padding: '12px', borderBottom: '1px solid #f1f2f6', color: '#2d3436' }}>
-                                            👤 {student.fullName || `${student.sFirstName} ${student.sLastName}`}
+                                            👤 {student.fullName || student.name || `${student.sFirstName || ''} ${student.sLastName || ''}`}
                                         </td>
                                     </tr>
                                 ))}
