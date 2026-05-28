@@ -54,7 +54,8 @@ public class StudentService {
                             students.size(),
                             section.getMaxCapacity(),
                             section.getProjectFileName(),
-                            students
+                            students,
+                            section.getSemester().getSemID()
                     );
                 });
     }

@@ -74,7 +74,8 @@ public class SectionService {
                     students.size(),
                     section.getMaxCapacity(),
                     section.getProjectFileName(),
-                    students
+                    students,
+                    section.getSemester().getSemID()
             );
         }).toList();
     }
@@ -163,7 +164,8 @@ public class SectionService {
                     students.size(),
                     section.getMaxCapacity(),
                     section.getProjectFileName(),
-                    students
+                    students,
+                    section.getSemester().getSemID()
             );
         }).toList();
     }

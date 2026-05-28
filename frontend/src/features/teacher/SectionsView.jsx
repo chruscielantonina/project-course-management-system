@@ -334,13 +334,16 @@ const SectionsView = () => {
                     {selectedDate && (
                         <>
                             {attendanceList.map(s => {
-                                // KLUCZOWA POPRAWKA: Łapiemy 'student' z JSON-a
                                 const studId = s.studentId || s.sID || s.sid || s.id || s.student;
                                 return (
-                                    <div key={studId} style={{ display: 'flex', gap: '20px', marginBottom: '15px', alignItems: 'center', borderBottom: '1px solid #f1f2f6', paddingBottom: '10px' }}>
+                                    <div key={studId} style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '15px', alignItems: 'center', borderBottom: '1px solid #f1f2f6', paddingBottom: '10px' }}>
                                         <span style={{ minWidth: '200px', fontWeight: '500' }}>{s.fullName || `${s.sFirstName} ${s.sLastName}`}</span>
-                                        <label style={{ cursor: 'pointer' }}><input type="radio" checked={s.status === 'PRESENT'} onChange={() => handleAttendanceChange(studId, 'PRESENT')} /> Obecny</label>
-                                        <label style={{ cursor: 'pointer' }}><input type="radio" checked={s.status === 'ABSENT'} onChange={() => handleAttendanceChange(studId, 'ABSENT')} /> Nieobecny</label>
+                                        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                                            <label style={{ cursor: 'pointer' }}><input type="radio" checked={s.status === 'PRESENT'} onChange={() => handleAttendanceChange(studId, 'PRESENT')} /> Obecny</label>
+                                            <label style={{ cursor: 'pointer' }}><input type="radio" checked={s.status === 'ABSENT'} onChange={() => handleAttendanceChange(studId, 'ABSENT')} /> Nieobecny</label>
+                                            <label style={{ cursor: 'pointer' }}><input type="radio" checked={s.status === 'LATE'} onChange={() => handleAttendanceChange(studId, 'LATE')} /> Spóźniony</label>
+                                            <label style={{ cursor: 'pointer' }}><input type="radio" checked={s.status === 'JUSTIFIED'} onChange={() => handleAttendanceChange(studId, 'JUSTIFIED')} /> Usprawiedliwiony</label>
+                                        </div>
                                     </div>
                                 );
                             })}

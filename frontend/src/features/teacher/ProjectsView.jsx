@@ -62,8 +62,9 @@ const ProjectsView = () => {
 
     const filteredSections = sections.filter(sec => {
         if (selectedSemesterId === 'ALL') return true;
+
         const secSemId = sec.semesterId || sec.semId || sec.semesterID || sec.semester?.semID || sec.semester?.id;
-        if (!secSemId) return true;
+
         return secSemId === selectedSemesterId;
     });
 
@@ -185,6 +186,7 @@ const ProjectsView = () => {
                         </div>
 
                         <h4 style={{ margin: '0 0 10px 0', color: '#636e72' }}>Członkowie grupy odpowiedzialni za projekt:</h4>
+
                         {studentsList.length > 0 ? (
                             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
                                 <thead>
