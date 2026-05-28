@@ -51,33 +51,34 @@ public class SectionService {
 
     @Transactional(readOnly = true)
     public List<SectionDashboardResponse> getAllSectionsForStudents() {
-        // Fetch only sections with REGISTERED status, as requested
         List<Section> sections = sectionRepository.findBySeState(SectionStatus.REGISTERED);
 
-        return sections.stream().map(section -> {
-            List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
-                    .map(ss -> new StudentBasicResponse(
-                            ss.getStudent().getSID(),
-                            ss.getStudent().getAppUser().getId(),
-                            ss.getStudent().getSFirstName() + " " + ss.getStudent().getSLastName()
-                    )).toList();
+        return sections.stream()
+                .filter(section -> section.getSemester().isCurrent())
+                .map(section -> {
+                    List<StudentBasicResponse> students = section.getEnrolledStudents().stream()
+                            .map(ss -> new StudentBasicResponse(
+                                    ss.getStudent().getSID(),
+                                    ss.getStudent().getAppUser().getId(),
+                                    ss.getStudent().getSFirstName() + " " + ss.getStudent().getSLastName()
+                            )).toList();
 
-            String teacherName = section.getTeacher().getTFirstName() + " " + section.getTeacher().getTLastName();
-            String topicName = section.getTopic() != null ? section.getTopic().getToName() : "N/A";
+                    String teacherName = section.getTeacher().getTFirstName() + " " + section.getTeacher().getTLastName();
+                    String topicName = section.getTopic() != null ? section.getTopic().getToName() : "N/A";
 
 
-            return new SectionDashboardResponse(
-                    section.getSeID(),
-                    topicName,
-                    section.getSeState().name(),
-                    teacherName,
-                    students.size(),
-                    section.getMaxCapacity(),
-                    section.getProjectFileName(),
-                    students,
-                    section.getSemester().getSemID()
-            );
-        }).toList();
+                    return new SectionDashboardResponse(
+                            section.getSeID(),
+                            topicName,
+                            section.getSeState().name(),
+                            teacherName,
+                            students.size(),
+                            section.getMaxCapacity(),
+                            section.getProjectFileName(),
+                            students,
+                            section.getSemester().getSemID()
+                    );
+                }).toList();
     }
 
     @Transactional
